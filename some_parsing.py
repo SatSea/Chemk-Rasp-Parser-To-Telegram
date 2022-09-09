@@ -72,7 +72,7 @@ async def waiter_checker():
         while(resp == None):
             resp = checker()
             if resp == None:
-                await wait(18000)
+                await wait(300)
         with open ( "config.json" , "r" ) as config:
             ids = json.loads(config.read())
             print(ids[0]["id"])
