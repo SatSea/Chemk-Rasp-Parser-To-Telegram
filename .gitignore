@@ -1,0 +1,5 @@
+/Testing Stuff/
+*.log
+*.json
+*.env
+Tokens.env
