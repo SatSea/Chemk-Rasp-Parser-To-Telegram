@@ -11,41 +11,73 @@ from dotenv import load_dotenv
 
 
 # region some needed vars
-load_dotenv("Tokens.env")
+load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
 bot = AsyncTeleBot(TOKEN)
 today = tomorrow = None
+
 # endregion
 
+def plain_rasp(day):
+    with open("plain_rasp.json", "r", encoding="utf-8") as rasp:
+        raspisanie = rasp.read()
+        all_rasp = json.loads(raspisanie)
+    return all_rasp["groups"]["ir1-20"][day]
+
+def default_rasp(plain_raspisanie):
+    paras = []
+    for para in range(len(plain_raspisanie)):
+        if(len(plain_raspisanie[para]) != 0): paras.append(f"Номер пары: {para+1}  Пара: {plain_raspisanie[para][0]}, {plain_raspisanie[para][1]} Кабинет: {plain_raspisanie[para][2]}")
+    schedule = "\n".join(paras)
+    return schedule
 
 def get_rsp(day):
     contents, schedule_on_site = get_from_site(day)
+    para = []
+    has_group = False
     if(schedule_on_site is None):
         return "Мне не удалось найти расписание на сайте :("
-
-    nomer_pari, nazvanie_para, kabunet_pari = [], [], []
+    plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
     try:
-        tables = pd.read_html(contents)
+        tables = pd.read_html(contents,thousands=None)
     except:
         return "Расписание есть на сайте, но у меня не получилось его разобрать на таблицы :("
     try:
-        for index in range(len(tables[1][0])):
+        for index in range(len(tables[1])):
             group = tables[1][0][index]
             if group == "Ир1-20":
-                nomer_pari.append(tables[1][1][index])
-                nazvanie_para.append(tables[1][2][index])
-                kabunet_pari.append(tables[1][3][index])
+                has_group = True
+                paras = tables[1][2][index]
+                if (paras == "По расписанию"):
+                        for nomer in (tables[0][1][index]).split(','):
+                            para.append(f"Номер пары: {nomer}  Пара: {plain_raspisanie[0][2][nomer]} Кабинет: {plain_raspisanie[0][3][nomer]}")
+                elif (paras == "Нет"):
+                    para.append(f"Номер пары: {tables[1][1][index]}  Пара: отменена")
+                else:
+                    para.append(
+            f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
     except:
         try:
             for index in range(len(tables[0])):
                 group = tables[0][0][index]
                 if group == "Ир1-20":
-                    nomer_pari.append(tables[0][1][index])
-                    nazvanie_para.append(tables[0][2][index])
-                    kabunet_pari.append(tables[0][3][index])
+                    has_group = True
+                    paras = tables[0][2][index]
+                    if (paras == "По расписанию"):
+                        for nomer in (tables[0][1][index]).split(','):
+                            nomer = int(nomer) - 1
+                            para.append(f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                    elif (paras == "Нет"):
+                        para.append(f"Номер пары: {tables[0][1][index]}  Пара: отменена")
+                    else:
+                        para.append(
+                f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
         except:
             return "Расписание есть на сайте, но у меня не получилось его разобрать :("
-    itogo = gen_message(nomer_pari, nazvanie_para, kabunet_pari)
+    if(has_group):
+        itogo = gen_message(para)
+    else:
+        itogo = default_rasp(plain_raspisanie)
     return itogo
 
 def get_from_site(day):
@@ -57,13 +89,10 @@ def get_from_site(day):
     return contents,schedule_on_site
 
 
-def gen_message(nomer_pari, nazvanie_para, kabunet_pari):
-    para = []
-    for index in range(len(nomer_pari)):
-        para.append(
-            f"Номер пары: {nomer_pari[index]}  Пара: {nazvanie_para[index]}  Кабинет: {kabunet_pari[index]}\n")
-    pervaia_para = f"Приходить к {nomer_pari[0]} паре\n\n"
-    itogo = pervaia_para+(''.join(para))
+def gen_message(para):
+    # para = []
+    # pervaia_para = f"Приходить к {nomer_pari[0]} паре\n\n"
+    itogo = ('\n'.join(para))
     return itogo
 
 
@@ -94,20 +123,51 @@ async def dump_logs(logging_info):
 
 def checker():
     print("Чекаю расписание")
+    
     try:
         contents, schedule_on_site = get_from_site("tomorrow")
         if(schedule_on_site is None):
             return None
-        tables = pd.read_html(contents)
-        if tables != None:
-            resp = []
-            for index in range(len(tables[1][0])):
+        tables = pd.read_html(contents,thousands=None)
+        para = []
+        has_group = False
+        plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+        try:
+            for index in range(len(tables[1])):
                 group = tables[1][0][index]
                 if group == "Ир1-20":
-                    resp[0].append(tables[1][1][index])
-                    resp[1].append(tables[1][2][index])
-                    resp[2].append(tables[1][3][index])
-            return gen_message[resp[0], resp[1], resp[2]]
+                    has_group = True
+                    paras = tables[1][2][index]
+                    if (paras == "По расписанию"):
+                            for nomer in (tables[0][1][index]).split(','):
+                                para.append(f"Номер пары: {nomer}  Пара: {plain_raspisanie[0][2][nomer]} Кабинет: {plain_raspisanie[0][3][nomer]}")
+                    elif (paras == "Нет"):
+                        para.append(f"Номер пары: {tables[1][1][index]}  Пара: отменена")
+                    else:
+                        para.append(
+                f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
+        except:
+            try:
+                for index in range(len(tables[0])):
+                    group = tables[0][0][index]
+                    if group == "Ир1-20":
+                        has_group = True
+                        paras = tables[0][2][index]
+                        if (paras == "По расписанию"):
+                            for nomer in (tables[0][1][index]).split(','):
+                                nomer = int(nomer) - 1
+                                para.append(f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                        elif (paras == "Нет"):
+                            para.append(f"Номер пары: {tables[0][1][index]}  Пара: отменена")
+                        else:
+                            para.append(
+                    f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
+            except:
+                return "Расписание есть на сайте, но у меня не получилось его разобрать :("
+        if(has_group):
+            itogo = gen_message(para)
+        else:
+            itogo = default_rasp(plain_raspisanie)
     except:
         print("Чекнул, чуть не умер, но выжил")
     else:
@@ -127,23 +187,26 @@ async def wait(time):
 async def FAQ(message: types.Message):
     create_task(bot.reply_to(message, """FAQ: 
  1)Q: Почему бот такой кривой?
- A: Потому что, бюджет размером в банку пива и разрабатывал все это долбоеб(ка) на разработке
+    A: Потому что, бюджет размером в банку пива и разрабатывал все это долбоеб(ка) на разработке
  2)Q: Поддержка других групп?
- A: Да, попытаюсь сделать в течении месяца
+    A: Да, попытаюсь сделать в течении месяца
  2)Q: Поддержка других корпусов?
- A: Нет, потому что у меня хватит сил на такую большую переделку кода (у них там таблицы с расписание парсить слишком трудно...)
+    A: Нет, потому что у меня хватит сил на такую большую переделку кода (у них там таблицы с расписание парсить слишком трудно...)
  3)Q: Сколько будет работать этот бот?
- A: Да
+    A: Да
  4)Q: Код будет выложен?
- A: Нет, мне его стыдно показывать
+    A: Нет, мне его стыдно показывать
  5)Q: Почему бот иногда так долго отвечает?
- A: а)Бот недавно перезапускался и у него пустой кэш
- б) Период рассылки сообщений
- в) Опять сайт ЧЭМК ограничил скорость для меня
- г) Я накосячил где-то (Поймите и простите)
- д) Бот ушел опять в бесконечную петлю
- 6)Q: У меня есть идея/заметил баг, как мне связаться?
- A: Странное желание, но вот
+    A: а)Бот недавно перезапускался и у него пустой кэш
+    б) Период рассылки сообщений
+    в) Опять сайт ЧЭМК ограничил скорость для меня
+    г) Я накосячил где-то (Поймите и простите)
+    д) Бот ушел опять в бесконечную петлю
+ 6)Q: Логируется ли какая-либо информация?
+    A: Да, но логируется минимальное количество информации (Ник, время, исполненная команда, статус выполнения команды)
+    Данные удаляются по первому требованию пользователя. 
+ 7)Q: У меня есть идея/заметил баг, как мне связаться?
+    A: Странное желание, но вот
  satsea388@gmail.com / https://t.me/satsea / Aestas#0577""")
 )
 
