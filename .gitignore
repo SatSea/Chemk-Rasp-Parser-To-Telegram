@@ -1,6 +1,6 @@
 /Testing Stuff/
 *.log
-*.json
+config.json
 *.env
 Tokens.env
 Env/Tokens.env
