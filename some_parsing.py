@@ -37,7 +37,10 @@ def get_rsp(day):
     has_group = False
     if(schedule_on_site is None):
         return "Мне не удалось найти расписание на сайте :("
-    plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+    if(day == "Today"):
+        plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+    else:
+        plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
     try:
         tables = pd.read_html(contents,thousands=None)
     except:
@@ -183,30 +186,30 @@ async def wait(time):
     return await asyncio.sleep(time)
 
 
-@bot.message_handler(commands=["FAQ"])
+@bot.message_handler(commands=["FAQ","faq"])
 async def FAQ(message: types.Message):
     create_task(bot.reply_to(message, """FAQ: 
  1)Q: Почему бот такой кривой?
     A: Потому что, бюджет размером в банку пива и разрабатывал все это долбоеб(ка) на разработке
  2)Q: Поддержка других групп?
     A: Да, попытаюсь сделать в течении месяца
- 2)Q: Поддержка других корпусов?
+ 3)Q: Поддержка других корпусов?
     A: Нет, потому что у меня хватит сил на такую большую переделку кода (у них там таблицы с расписание парсить слишком трудно...)
- 3)Q: Сколько будет работать этот бот?
+ 4)Q: Сколько будет работать этот бот?
     A: Да
- 4)Q: Код будет выложен?
-    A: Нет, мне его стыдно показывать
- 5)Q: Почему бот иногда так долго отвечает?
+ 5)Q: Код будет выложен?
+    A: Нет, мне его стыдно показывать (но когда-нибудь потом возможно выложу)
+ 6)Q: Почему бот иногда так долго отвечает?
     A: а)Бот недавно перезапускался и у него пустой кэш
     б) Период рассылки сообщений
     в) Опять сайт ЧЭМК ограничил скорость для меня
     г) Я накосячил где-то (Поймите и простите)
     д) Бот ушел опять в бесконечную петлю
- 6)Q: Логируется ли какая-либо информация?
-    A: Да, но логируется минимальное количество информации (Ник, время, исполненная команда, статус выполнения команды)
+ 7)Q: Логируется ли какая-либо информация?
+    A: Да, логируется минимальное количество информации (Ник, время, исполненная команда, статус выполнения команды)
     Данные удаляются по первому требованию пользователя. 
- 7)Q: У меня есть идея/заметил баг, как мне связаться?
-    A: Странное желание, но вот
+ 8)Q: У меня есть идея/заметил баг, как мне связаться?
+    A: Странное желание, но вот (и пожалуйста не пишите мне другим способом)
  satsea388@gmail.com / https://t.me/satsea / Aestas#0577""")
 )
 
@@ -224,7 +227,7 @@ async def start(message: types.Message):
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=keyboard)
 
-@bot.message_handler(commands=["Subscribe"])
+@bot.message_handler(commands=["Subscribe","subscribe"])
 async def cmd_start(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
@@ -271,7 +274,7 @@ async def cmd_start(message: types.Message):
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
 
-@bot.message_handler(commands=["Today"])
+@bot.message_handler(commands=["Today","today"])
 async def cmd_start(message: types.Message):
     rasp = get_rsp("Today")
     asyncio.create_task(dump_logs(
@@ -279,7 +282,7 @@ async def cmd_start(message: types.Message):
     await bot.reply_to(message, rasp)
 
 
-@bot.message_handler(commands=["Tomorrow"])
+@bot.message_handler(commands=["Tomorrow","tomorrow"])
 async def cmd_start(message: types.Message):
     rasp = get_rsp("Tomorrow")
     asyncio.create_task(dump_logs(
@@ -289,7 +292,8 @@ async def cmd_start(message: types.Message):
 
 @bot.message_handler(func=lambda message: True)
 async def unknown_command(message):
-    await bot.reply_to(message, "Неизвестная комманда")
+    await bot.reply_to(message, "Я не нашел такую команду...")
+    await bot.send_animation(message.chat.id,r'https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
 
 
 async def init():
