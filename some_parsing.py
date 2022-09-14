@@ -104,8 +104,6 @@ def get_from_site(day):
 
 
 def gen_message(para):
-    # para = []
-    # pervaia_para = f"Приходить к {nomer_pari[0]} паре\n\n"
     itogo = ('\n'.join(para))
     return itogo
 
@@ -114,7 +112,7 @@ async def waiter_checker():
     while(True):
         print("Считаю сколько спать")
         time_to_sleep = (datetime.datetime.now().replace(
-            hour=9, minute=30, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
+            hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
         seconds_to_sleep = time_to_sleep.seconds
         await wait(seconds_to_sleep)
         resp = None
@@ -126,7 +124,7 @@ async def waiter_checker():
             ids = json.loads(config.read())
             print(ids[0]["id"])
             for id in ids[0]["id"]:
-                dispatch(id, resp)
+                create_task(dispatch(id, resp))
 
 
 async def dump_logs(logging_info):
@@ -190,10 +188,11 @@ def checker():
         print("Чекнул, чуть не умер, но выжил")
     else:
         print("Чекнул, не нашел расписание")
+    return itogo
 
 
 async def dispatch(id, rasp):
-    bot.send_message(id, rasp)
+    await bot.send_message(id, rasp)
 
 
 async def wait(time):
