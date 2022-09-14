@@ -40,8 +40,8 @@ def get_rsp(day):
     contents, schedule_on_site = get_from_site(day)
     para = []
     has_group = False
-    if(schedule_on_site is None):
-        return "Мне не удалось найти расписание на сайте :("
+    if(not schedule_on_site):
+        return "На сайте нет расписания :("
     if(day == "Today"):
         plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
     else:
@@ -140,7 +140,7 @@ def checker():
 
     try:
         contents, schedule_on_site = get_from_site("tomorrow")
-        if(schedule_on_site is None):
+        if(not schedule_on_site):
             return None
         tables = pd.read_html(contents, thousands=None)
         para = []
