@@ -4,3 +4,4 @@ config.json
 *.env
 Tokens.env
 Env/Tokens.env
+.vscode/*

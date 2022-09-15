@@ -1,14 +1,14 @@
 import asyncio
+import datetime
 import json
 import os
-import requests
-import pandas as pd
-from telebot import types
-from bs4 import BeautifulSoup
-from telebot.async_telebot import AsyncTeleBot
-import datetime
-from dotenv import load_dotenv
 
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from telebot import types
+from telebot.async_telebot import AsyncTeleBot
 
 # region some needed vars
 load_dotenv("Env/Tokens.env")
@@ -28,6 +28,7 @@ def plain_rasp(day):
 
 def default_rasp(plain_raspisanie):
     paras = []
+    if plain_raspisanie == []: return "Согласно расписанию, этот день не является учебным, так что скорее всего идти никуда не надо"
     for para in range(len(plain_raspisanie)):
         if(len(plain_raspisanie[para]) != 0):
             paras.append(
@@ -40,13 +41,9 @@ def get_rsp(day):
     contents, schedule_on_site = get_from_site(day)
     para = []
     has_group = False
-    if(not schedule_on_site):
-        return "На сайте нет расписания :("
-    if(day == "Today"):
-        plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
-    else:
-        plain_raspisanie = plain_rasp(
-            (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
+    if not schedule_on_site: return "На сайте нет расписания :("
+    if day == "Today": plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+    else: plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
     try:
         tables = pd.read_html(contents, thousands=None)
     except:
@@ -116,15 +113,15 @@ async def waiter_checker():
         seconds_to_sleep = time_to_sleep.seconds
         await wait(seconds_to_sleep)
         resp = None
-        while(resp == None):
+        while(resp is None):
             resp = checker()
-            if resp == None:
+            if resp is None:
                 await wait(300)
         with open("config.json", "r") as config:
             ids = json.loads(config.read())
             print(ids[0]["id"])
-            for id in ids[0]["id"]:
-                create_task(dispatch(id, resp))
+            for ides in ids[0]["id"]:
+                create_task(dispatch(ides, resp))
 
 
 async def dump_logs(logging_info):
@@ -143,7 +140,7 @@ def checker():
         tables = pd.read_html(contents, thousands=None)
         para = []
         has_group = False
-        plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+        plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
         try:
             for index in range(len(tables[1])):
                 group = tables[1][0][index]
@@ -186,8 +183,6 @@ def checker():
             itogo = default_rasp(plain_raspisanie)
     except:
         print("Чекнул, чуть не умер, но выжил")
-    else:
-        print("Чекнул, не нашел расписание")
     return itogo
 
 
@@ -206,7 +201,7 @@ async def FAQ(message: types.Message):
 1\)Q: Почему бот такой кривой?
   A: Потому что, бюджета не хватило даже на банку пива и разрабатывал все это долбоеб\(ка\) на разработке
 2\)Q: Поддержка других групп?
-  A: ~Да, попытаюсь сделать в течение месяца~ UPD:Ньет, тоже не получиться сделать это легким путем\.
+  A: ~Да, попытаюсь сделать в течение месяца~ ~UPD:Ньет, тоже не получиться сделать это легким путем\.~ UPD:У меня получилось это сделать, но это сильно бьет по производительности и я пока что не готов на такие жертвы.
 3\)Q: Поддержка других корпусов?
   A: Нет, потому что у меня хватит сил на такую большую переделку кода \(у них там таблицы с расписанием парсить слишком трудно\.\.\.\)
 4\)Q: Сколько будет работать этот бот?
@@ -215,7 +210,7 @@ async def FAQ(message: types.Message):
   A: Нет, мне его стыдно показывать \(но когда\-нибудь потом возможно выложу\)
 6\)Q: Почему бот иногда так долго отвечает?
   A: а\) Все таки одного ядро уже не хватает :\)
-б\) Бот недавно перезапускался и у него пустой кэш
+~б\) Бот недавно перезапускался и у него пустой кэш~ Кэш выпилен из-за большого потребления памяти :\(
 в\) Период рассылки сообщений
 г\) Опять сайт ЧЭМК ограничил скорость для меня, опять\.\.\.\.
 д\) Я накосячил где\-то \(Поймите и простите\)
@@ -250,11 +245,10 @@ async def cmd_start(message: types.Message):
         f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     # try:
     chat_id = message.chat.id
-    if(not os.path.isfile("config.json")):
-        open("config.json", "x").close()
+    if not os.path.isfile("config.json"): open("config.json", "x").close()
     with open("config.json", "r") as config:
         size_file = os.stat("config.json").st_size > 0
-        if(size_file):
+        if size_file:
             configs = json.loads(config.read())
             with open("config.json", "w") as config:
                 ids = configs[0]["id"]
@@ -290,6 +284,9 @@ async def cmd_start(message: types.Message):
                     asyncio.create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
+@bot.message_handler(commands=["test", "Test"])
+async def cmd_start(message: types.Message):
+    await bot.reply_to(message, checker())
 
 @bot.message_handler(commands=["Today", "today"])
 async def cmd_start(message: types.Message):
