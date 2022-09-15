@@ -28,12 +28,14 @@ def plain_rasp(day):
 
 def default_rasp(plain_raspisanie):
     paras = []
+    frist_para = None
     if plain_raspisanie == []: return "Согласно расписанию, этот день не является учебным, так что скорее всего идти никуда не надо"
     for para in range(len(plain_raspisanie)):
         if(len(plain_raspisanie[para]) != 0):
+            if frist_para is None: frist_para = f"Приходить к {para +1} паре\n"
             paras.append(
                 f"Номер пары: {para+1}  Пара: {plain_raspisanie[para][0]}, {plain_raspisanie[para][1]} Кабинет: {plain_raspisanie[para][2]}")
-    schedule = "\n".join(paras)
+    schedule = frist_para + "\n".join(paras)
     return schedule
 
 
