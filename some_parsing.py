@@ -15,6 +15,8 @@ load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
 bot = AsyncTeleBot(TOKEN)
 today = tomorrow = None
+weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
+month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
 # endregion
 
 
@@ -39,10 +41,11 @@ def default_rasp(plain_raspisanie):
 
 
 def get_rsp(day):
+    if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today": return "Сегодня Воскресенье, какое раписание на сегодня?"
     contents, schedule_on_site = get_from_site(day)
     para = []
     has_group = False
-    if not schedule_on_site: return "На сайте нет расписания :("
+    if not schedule_on_site: return "На сайте пока что нет расписания :("
     if day == "Today": plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
     else: plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
     try:
@@ -89,6 +92,12 @@ def get_rsp(day):
         itogo = gen_message(para)
     else:
         itogo = default_rasp(plain_raspisanie)
+    if day == "Today":
+        if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[datetime.datetime.today().weekday()]} {datetime.datetime.today().day} {month[datetime.datetime.today().month-1]}:\n\n" + itogo
+        else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+    else:
+        if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
+        else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     return itogo
 
 
@@ -121,8 +130,8 @@ async def waiter_checker():
         with open("config.json", "r") as config:
             ids = json.loads(config.read())
             print(ids[0]["id"])
-            for ides in ids[0]["id"]:
-                create_task(dispatch(ides, resp))
+            for people_id in ids[0]["id"]:
+                create_task(dispatch(people_id, resp))
 
 
 async def dump_logs(logging_info):
@@ -184,6 +193,8 @@ def checker():
             itogo = default_rasp(plain_raspisanie)
     except:
         print("Чекнул, чуть не умер, но выжил")
+    if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
+    else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     return itogo
 
 
@@ -219,7 +230,9 @@ async def FAQ(message: types.Message):
 7\)Q: Логируется ли какая\-либо информация? \(aka Политика конфиденциальности\)
   A: Да, логируется минимальное количество информации \(Ник, время, исполненная команда, статус выполнения команды\)
   Данные удаляются по первому требованию пользователя\.
-8\)Q: У меня есть идея/заметил баг, как мне связаться?
+8\) 123
+  A: Был такой легендарный мужик, который в 20\-е годы написал письмо в ЧЭМК\. Написал он примерно следующее: "Я уже 3 года считаю таблицы с расписанием у вас на сайте \- их то 2, то 3, то 4, а иногда и 1\. Вы там сумасшедшие что ли все?"
+9\)Q: У меня есть идея/заметил баг, как мне связаться?
   A: Странное желание, но вот \(и, пожалуйста, не пишите мне другими способами\)
   satsea388@gmail\.com / https://t\.me/satsea / Aestas\#0577""", parse_mode='MarkdownV2'))
 
@@ -237,6 +250,7 @@ async def start(message: types.Message):
         f"Issued \"start\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо оргранизацией с аббревиатурой ЧЭМК.
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
+Если вы знаете что можно поправить, то пишите.
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=keyboard)
 
 
