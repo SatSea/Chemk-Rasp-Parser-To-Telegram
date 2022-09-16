@@ -28,7 +28,7 @@ def plain_rasp(day):
 def default_rasp(plain_raspisanie):
     paras = []
     frist_para = None
-    if plain_raspisanie == []: return "Согласно расписанию, этот день не является учебным, так что скорее всего идти никуда не надо"
+    if plain_raspisanie == []: return "Согласно расписанию, в этот день нет пар"
     for para in range(len(plain_raspisanie)):
         if(len(plain_raspisanie[para]) != 0):
             if frist_para is None: frist_para = f"Приходить к {para +1} паре\n"
