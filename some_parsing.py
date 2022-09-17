@@ -24,6 +24,7 @@ def plain_rasp(day):
     with open("plain_rasp.json", "r", encoding="utf-8") as rasp:
         raspisanie = rasp.read()
         all_rasp = json.loads(raspisanie)
+    if day == "Sunday": day="Monday"
     return all_rasp["groups"]["ir1-20"][day]
 
 
@@ -52,7 +53,7 @@ def get_rsp(day):
         tables = pd.read_html(contents, thousands=None)
     except:
         return "Расписание есть на сайте, но у меня не получилось его разобрать на таблицы :("
-    try:
+    if len(tables) > 1:
         for index in range(len(tables[1])):
             group = tables[1][0][index]
             if group == "Ир1-20":
@@ -68,7 +69,7 @@ def get_rsp(day):
                 else:
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
-    except:
+    else:
         try:
             for index in range(len(tables[0])):
                 group = tables[0][0][index]
@@ -93,11 +94,11 @@ def get_rsp(day):
     else:
         itogo = default_rasp(plain_raspisanie)
     if day == "Today":
-        if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[datetime.datetime.today().weekday()]} {datetime.datetime.today().day} {month[datetime.datetime.today().month-1]}:\n\n" + itogo
-        else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+        if datetime.datetime.today().weekday != 5: itogo = f"Расписание на {weekday[datetime.datetime.today().weekday()]} {datetime.datetime.today().day} {month[datetime.datetime.today().month-1]}:\n\n" + itogo
+        else: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     else:
-        if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
-        else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+        if datetime.datetime.today().weekday() != 5: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
+        else: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     return itogo
 
 
@@ -116,11 +117,13 @@ def gen_message(para):
 
 
 async def waiter_checker():
+    print("Поиск расписания запущен")
     while(True):
         print("Считаю сколько спать")
-        time_to_sleep = (datetime.datetime.now().replace(
-            hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
-        seconds_to_sleep = time_to_sleep.seconds
+        weekday = datetime.datetime.today().weekday()
+        if weekday != 5: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
+        else: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
+        seconds_to_sleep = time_to_sleep.total_seconds()
         await wait(seconds_to_sleep)
         resp = None
         while(resp is None):
@@ -327,7 +330,7 @@ async def unknown_command(message):
 
 async def init():
     asyncio.create_task(bot.polling())
-    print("Я не завис")
+    print("Я запустился")
     await asyncio.create_task(waiter_checker())
 
 
