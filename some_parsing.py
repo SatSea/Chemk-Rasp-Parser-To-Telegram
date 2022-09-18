@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import math
 import os
 
 import pandas as pd
@@ -24,7 +25,7 @@ def plain_rasp(day):
     with open("plain_rasp.json", "r", encoding="utf-8") as rasp:
         raspisanie = rasp.read()
         all_rasp = json.loads(raspisanie)
-    if day == "Sunday": day="Monday"
+    if day == "Sunday": day="Monday" # Даб,даб в воскресенье никто не учится
     return all_rasp["groups"]["ir1-20"][day]
 
 
@@ -42,7 +43,8 @@ def default_rasp(plain_raspisanie):
 
 
 def get_rsp(day):
-    if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today": return "Сегодня Воскресенье, какое раписание на сегодня?"
+    if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today": 
+        return "Сегодня Воскресенье, какое раписание на сегодня?\nЧтобы узнать расписание на завтра используй /Tomorrow "
     contents, schedule_on_site = get_from_site(day)
     para = []
     has_group = False
@@ -53,16 +55,20 @@ def get_rsp(day):
         tables = pd.read_html(contents, thousands=None)
     except:
         return "Расписание есть на сайте, но у меня не получилось его разобрать на таблицы :("
-    if len(tables) > 1:
+    if len(tables) > 1: # выстрелит в колено если опять начнется мракобесие с таблицами
         for index in range(len(tables[1])):
             group = tables[1][0][index]
             if group == "Ир1-20":
                 has_group = True
                 paras = tables[1][2][index]
                 if (paras == "По расписанию"):
-                    for nomer in (tables[0][1][index]).split(','):
-                        para.append(
-                            f"Номер пары: {nomer}  Пара: {plain_raspisanie[0][2][nomer]} Кабинет: {plain_raspisanie[0][3][nomer]}")
+                    for nomer in (tables[1][1][index]).split(','):
+                        nomer = int(nomer) - 1
+                        kab = tables[1][3][index]
+                        if kab != kab: para.append(
+                            f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                        else: para.append(
+                            f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
                 elif (paras == "Нет"):
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
@@ -79,8 +85,11 @@ def get_rsp(day):
                     if (paras == "По расписанию"):
                         for nomer in (tables[0][1][index]).split(','):
                             nomer = int(nomer) - 1
-                            para.append(
+                            kab = tables[0][3][index]
+                            if kab != kab: para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                            else: para.append(
+                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[0][3][index]}")
                     elif (paras == "Нет"):
                         para.append(
                             f"Номер пары: {tables[0][1][index]}  Пара: отменена")
@@ -148,8 +157,7 @@ def checker():
 
     try:
         contents, schedule_on_site = get_from_site("tomorrow")
-        if(not schedule_on_site):
-            return None
+        if not schedule_on_site: return None
         tables = pd.read_html(contents, thousands=None)
         para = []
         has_group = False
@@ -265,8 +273,8 @@ async def cmd_start(message: types.Message):
     chat_id = message.chat.id
     if not os.path.isfile("config.json"): open("config.json", "x").close()
     with open("config.json", "r") as config:
-        size_file = os.stat("config.json").st_size > 0
-        if size_file:
+        file_not_empty = os.stat("config.json").st_size > 0
+        if file_not_empty:
             configs = json.loads(config.read())
             with open("config.json", "w") as config:
                 ids = configs[0]["id"]
