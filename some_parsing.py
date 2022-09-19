@@ -337,7 +337,7 @@ async def unknown_command(message):
 
 
 async def init():
-    asyncio.create_task(bot.polling())
+    asyncio.create_task(bot.infinity_polling())
     print("Я запустился")
     await asyncio.create_task(waiter_checker())
 
