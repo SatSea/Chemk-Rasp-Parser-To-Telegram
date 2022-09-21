@@ -14,21 +14,25 @@
 
 Для того чтобы установить все зависимости, используйте команду
 
-console
+```console
 pip install -r requirements.txt
+```
 
 ### Добавление токена
 
 Для того чтобы добавить токен вашего бота, измените переменную TOKEN в Tokens.env, должно получится что-то типа такого
 
+```
 TOKEN = "XXXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+```
 
 ### Запуск бота
 
 Для запуска бота достаточно просто запустить в консоли main.py
 
-console
+```console
 python main.py
+```
 
 ***
 
