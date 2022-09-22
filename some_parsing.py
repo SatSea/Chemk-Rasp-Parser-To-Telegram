@@ -337,9 +337,16 @@ async def unknown_command(message):
 
 
 async def init():
-    asyncio.create_task(bot.infinity_polling(timeout=30))
+    asyncio.create_task(inf_pooling())
     print("Я запустился")
     await asyncio.create_task(waiter_checker())
+
+async def inf_pooling():
+    while(True):
+        try:
+            await bot.infinity_polling(timeout=30)
+        except Exception as e:
+            dump_logs(f"\nException created: {e}")
 
 
 if __name__ == "__main__":
