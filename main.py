@@ -10,11 +10,14 @@ from dotenv import load_dotenv
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
+# disable some rules in pylint
+# pylint: disable=anomalous-backslash-in-string, line-too-long, bare-except, missing-function-docstring, unspecified-encoding, broad-except
+
 # region some needed vars
 load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
 bot = AsyncTeleBot(TOKEN)
-today = tomorrow = None
+TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
 groups = os.getenv('GROUP')
@@ -129,8 +132,8 @@ async def waiter_checker():
     print("Поиск расписания запущен")
     while(True):
         print("Считаю сколько спать")
-        weekday = datetime.datetime.today().weekday()
-        if weekday != 5: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
+        weekday_number = datetime.datetime.today().weekday()
+        if weekday_number != 5: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
         else: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
         seconds_to_sleep = time_to_sleep.total_seconds()
         await wait(seconds_to_sleep)
@@ -147,7 +150,7 @@ async def waiter_checker():
 
 
 async def dump_logs(logging_info):
-    print(f"Writted to logs")
+    print("Writted to logs")
     with open("plain_logging.log", "a") as log:
         log.write(logging_info)
 
@@ -209,8 +212,8 @@ def checker():
     return itogo
 
 
-async def dispatch(id, rasp):
-    await bot.send_message(id, rasp)
+async def dispatch(chat_id, rasp):
+    await bot.send_message(chat_id, rasp)
 
 
 async def wait(time):
@@ -315,7 +318,7 @@ async def cmd_start(message: types.Message):
 #     await bot.reply_to(message, checker())
 
 @bot.message_handler(commands=["Today", "today"])
-async def cmd_start(message: types.Message):
+async def today(message: types.Message):
     rasp = get_rsp("Today")
     asyncio.create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
@@ -323,7 +326,7 @@ async def cmd_start(message: types.Message):
 
 
 @bot.message_handler(commands=["Tomorrow", "tomorrow"])
-async def cmd_start(message: types.Message):
+async def tommorrow(message: types.Message):
     rasp = get_rsp("Tomorrow")
     asyncio.create_task(dump_logs(
         f"Issued \"Tomorrow\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
