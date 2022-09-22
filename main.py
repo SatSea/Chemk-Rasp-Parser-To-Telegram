@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import json
-import math
 import os
 
 import pandas as pd
@@ -311,9 +310,9 @@ async def cmd_start(message: types.Message):
                     asyncio.create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
-@bot.message_handler(commands=["test", "Test"])
-async def cmd_start(message: types.Message):
-    await bot.reply_to(message, checker())
+# @bot.message_handler(commands=["test", "Test"])
+# async def cmd_start(message: types.Message):
+#     await bot.reply_to(message, checker())
 
 @bot.message_handler(commands=["Today", "today"])
 async def cmd_start(message: types.Message):
@@ -345,7 +344,7 @@ async def init():
 async def inf_pooling():
     while(True):
         try:
-            await bot.infinity_polling(timeout=30)
+            await bot.polling(none_stop=True,timeout=30)
         except Exception as e:
             dump_logs(f"\nException created: {e}")
 
