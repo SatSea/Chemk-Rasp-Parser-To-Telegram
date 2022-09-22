@@ -18,6 +18,7 @@ bot = AsyncTeleBot(TOKEN)
 today = tomorrow = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
+groups = os.getenv('GROUP')
 # endregion
 
 
@@ -26,7 +27,7 @@ def plain_rasp(day):
         raspisanie = rasp.read()
         all_rasp = json.loads(raspisanie)
     if day == "Sunday": day="Monday" # Даб,даб в воскресенье никто не учится
-    return all_rasp["groups"]["ir1-20"][day]
+    return all_rasp["groups"][groups][day]
 
 
 def default_rasp(plain_raspisanie):
