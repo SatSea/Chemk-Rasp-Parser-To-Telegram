@@ -10,8 +10,9 @@ from dotenv import load_dotenv
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
-# disable some rules in pylint
+# region disable some rules in pylint
 # pylint: disable=anomalous-backslash-in-string, line-too-long, bare-except, missing-function-docstring, unspecified-encoding, broad-except
+# endregion
 
 # region some needed vars
 load_dotenv("Env/Tokens.env")
@@ -21,6 +22,7 @@ TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
 groups = os.getenv('GROUP')
+name_of_group = os.getenv('NAME_OF_GROUP')
 # endregion
 
 
@@ -61,7 +63,7 @@ def get_rsp(day):
     if len(tables) > 1: # выстрелит в колено если опять начнется мракобесие с таблицами
         for index in range(len(tables[1])):
             group = tables[1][0][index]
-            if group == "Ир1-20":
+            if group == name_of_group:
                 has_group = True
                 paras = tables[1][2][index]
                 if (paras == "По расписанию"):
@@ -82,7 +84,7 @@ def get_rsp(day):
         try:
             for index in range(len(tables[0])):
                 group = tables[0][0][index]
-                if group == "Ир1-20":
+                if group == name_of_group:
                     has_group = True
                     paras = tables[0][2][index]
                     if (paras == "По расписанию"):
@@ -168,7 +170,7 @@ def checker():
         try:
             for index in range(len(tables[1])):
                 group = tables[1][0][index]
-                if group == "Ир1-20":
+                if group == name_of_group:
                     has_group = True
                     paras = tables[1][2][index]
                     if (paras == "По расписанию"):
@@ -185,7 +187,7 @@ def checker():
             try:
                 for index in range(len(tables[0])):
                     group = tables[0][0][index]
-                    if group == "Ир1-20":
+                    if group == name_of_group:
                         has_group = True
                         paras = tables[0][2][index]
                         if (paras == "По расписанию"):
