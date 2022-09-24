@@ -207,8 +207,11 @@ def checker():
             itogo = default_rasp(plain_raspisanie)
     except:
         print("Чекнул, чуть не умер, но выжил")
-    if datetime.datetime.today().weekday != 5: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
-    else: itogo = f"Ежедневная рассылка расписания на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+    weekday_number = datetime.datetime.today().weekday()
+    tommorrow = datetime.datetime.today() + datetime.timedelta(days=1)
+    day_plus_two = datetime.datetime.today() + datetime.timedelta(days=2)
+    if weekday_number != 5: itogo = f"Ежедневная рассылка расписания на {weekday[tommorrow.weekday()]} {tommorrow.day} {month[tommorrow.month-1]}:\n\n" + itogo
+    else: itogo = f"Ежедневная рассылка расписания на {weekday[day_plus_two.weekday()]} {day_plus_two.day} {month[day_plus_two.month-1]}:\n\n" + itogo
     return itogo
 
 
@@ -313,9 +316,9 @@ async def cmd_start(message: types.Message):
                     asyncio.create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
-# @bot.message_handler(commands=["test", "Test"])
-# async def cmd_start(message: types.Message):
-#     await bot.reply_to(message, checker())
+@bot.message_handler(commands=["test", "Test"])
+async def cmd_start(message: types.Message):
+    await bot.reply_to(message, checker())
 
 @bot.message_handler(commands=["Today", "today"])
 async def today(message: types.Message):
