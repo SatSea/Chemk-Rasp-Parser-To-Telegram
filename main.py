@@ -316,9 +316,9 @@ async def cmd_start(message: types.Message):
                     asyncio.create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
-@bot.message_handler(commands=["test", "Test"])
-async def cmd_start(message: types.Message):
-    await bot.reply_to(message, checker())
+# @bot.message_handler(commands=["test", "Test"])
+# async def cmd_start(message: types.Message):
+#     await bot.reply_to(message, checker())
 
 @bot.message_handler(commands=["Today", "today"])
 async def today(message: types.Message):
