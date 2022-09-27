@@ -17,12 +17,13 @@ from telebot.async_telebot import AsyncTeleBot
 # region some needed vars
 load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
+groups = os.getenv('GROUP')
+name_of_group = os.getenv('NAME_OF_GROUP')
 bot = AsyncTeleBot(TOKEN)
 TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
-groups = os.getenv('GROUP')
-name_of_group = os.getenv('NAME_OF_GROUP')
+then_start_to_check = 11
 # endregion
 
 
@@ -135,8 +136,10 @@ async def waiter_checker():
     while(True):
         print("Считаю сколько спать")
         weekday_number = datetime.datetime.today().weekday()
-        if weekday_number != 5: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
-        else: time_to_sleep = (datetime.datetime.now().replace(hour=10, minute=0, second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
+        if datetime.datetime.today().hour < then_start_to_check: time_to_sleep = datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) - datetime.datetime.now()
+        else:
+            if weekday_number != 5: time_to_sleep = (datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
+            else: time_to_sleep = (datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
         seconds_to_sleep = time_to_sleep.total_seconds()
         await wait(seconds_to_sleep)
         resp = None
