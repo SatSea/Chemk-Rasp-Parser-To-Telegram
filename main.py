@@ -81,6 +81,23 @@ def get_rsp(day):
                 else:
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
+            elif group == (name_of_group + " 1 п/г") or (name_of_group + " 2 п/г"):
+                has_group = True
+                paras = tables[1][2][index]
+                if (paras == "По расписанию"):
+                    for nomer in (tables[1][1][index]).split(','):
+                        nomer = int(nomer) - 1
+                        kab = tables[1][3][index]
+                        if kab != kab: para.append(
+                            f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                        else: para.append(
+                            f"Для {group[6:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                elif (paras == "Нет"):
+                    para.append(
+                        f"Номер пары: {tables[1][1][index]}  Пара: отменена")
+                else:
+                    para.append(
+                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
     else:
         try:
             for index in range(len(tables[0])):
@@ -102,6 +119,23 @@ def get_rsp(day):
                     else:
                         para.append(
                             f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
+                elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
+                    has_group = True
+                    paras = tables[0][2][index]
+                    if (paras == "По расписанию"):
+                        for nomer in (tables[0][1][index]).split(','):
+                            nomer = int(nomer) - 1
+                            kab = tables[0][3][index]
+                            if kab != kab: para.append(
+                                f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                            else: para.append(
+                                f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                    elif (paras == "Нет"):
+                        para.append(
+                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
+                    else:
+                        para.append(
+                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
         except:
             return "Расписание есть на сайте, но у меня не получилось его разобрать :("
     if(has_group):
@@ -186,6 +220,23 @@ def checker():
                     else:
                         para.append(
                             f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
+                elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
+                    has_group = True
+                    paras = tables[0][2][index]
+                    if (paras == "По расписанию"):
+                        for nomer in (tables[0][1][index]).split(','):
+                            nomer = int(nomer) - 1
+                            kab = tables[0][3][index]
+                            if kab != kab: para.append(
+                                f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                            else: para.append(
+                                f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                    elif (paras == "Нет"):
+                        para.append(
+                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
+                    else:
+                        para.append(
+                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
         except:
             try:
                 for index in range(len(tables[0])):
@@ -204,6 +255,23 @@ def checker():
                         else:
                             para.append(
                                 f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
+                    elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
+                        has_group = True
+                        paras = tables[0][2][index]
+                        if (paras == "По расписанию"):
+                            for nomer in (tables[0][1][index]).split(','):
+                                nomer = int(nomer) - 1
+                                kab = tables[0][3][index]
+                                if kab != kab: para.append(
+                                    f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                                else: para.append(
+                                    f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                        elif (paras == "Нет"):
+                            para.append(
+                                f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
+                        else:
+                            para.append(
+                                f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
             except:
                 return "Расписание есть на сайте, но у меня не получилось его разобрать :("
         if(has_group):
