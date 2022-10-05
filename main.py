@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import json
 import os
+from cachetools import cached, TTLCache
 
 import pandas as pd
 import requests
@@ -19,11 +20,12 @@ load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
 groups = os.getenv('GROUP')
 name_of_group = os.getenv('NAME_OF_GROUP')
+hour_when_start_checking = int(os.getenv('START_HOUR'))
 bot = AsyncTeleBot(TOKEN)
 TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
-month = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"]
-then_start_to_check = 11
+month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня",
+         "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"]
 # endregion
 
 
@@ -31,37 +33,75 @@ def plain_rasp(day):
     with open("plain_rasp.json", "r", encoding="utf-8") as rasp:
         raspisanie = rasp.read()
         all_rasp = json.loads(raspisanie)
-    if day == "Sunday": day="Monday" # Даб,даб в воскресенье никто не учится
+    if day == "Sunday":
+        day = "Monday"  # Даб,даб в воскресенье никто не учится
     return all_rasp["groups"][groups][day]
 
 
 def default_rasp(plain_raspisanie):
     paras = []
     frist_para = None
-    if plain_raspisanie == []: return "Согласно расписанию, в этот день нет пар"
+    if plain_raspisanie == []:
+        return "Согласно расписанию, в этот день нет пар"
     for para in range(len(plain_raspisanie)):
         if(len(plain_raspisanie[para]) != 0):
-            if frist_para is None: frist_para = f"Приходить к {para +1} паре\n"
+            if frist_para is None:
+                frist_para = f"Приходить к {para +1} паре\n"
             paras.append(
                 f"Номер пары: {para+1}  Пара: {plain_raspisanie[para][0]}, {plain_raspisanie[para][1]} Кабинет: {plain_raspisanie[para][2]}")
     schedule = frist_para + "\n".join(paras)
     return schedule
 
 
+@cached(cache=TTLCache(maxsize=1024, ttl=3600))
+def today_rasp():
+    return get_rsp("Today")
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=3600))
+def tomorrow_rasp():
+    return get_rsp("Tomorrow")
+
+
 def get_rsp(day):
-    if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today": 
+    if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today":
         return "Сегодня Воскресенье, какое раписание на сегодня?\nЧтобы узнать расписание на завтра используй /Tomorrow "
     contents, schedule_on_site = get_from_site(day)
+    print("Я не кэширован!")
     para = []
     has_group = False
-    if not schedule_on_site: return "На сайте пока что нет расписания :("
-    if day == "Today": plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
-    else: plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
+    if not schedule_on_site:
+        return "На сайте пока что нет расписания :("
+    if day == "Today":
+        plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
+    else:
+        plain_raspisanie = plain_rasp(
+            (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
     try:
         tables = pd.read_html(contents, thousands=None)
     except:
         return "Расписание есть на сайте, но у меня не получилось его разобрать на таблицы :("
-    if len(tables) > 1: # выстрелит в колено если опять начнется мракобесие с таблицами
+
+    has_group = parsing_lines_to_schedule(para, plain_raspisanie, tables)
+    if(has_group):
+        itogo = gen_message(para)
+    else:
+        itogo = default_rasp(plain_raspisanie)
+    if day == "Today":
+        if datetime.datetime.today().weekday != 5:
+            itogo = f"Расписание на {weekday[datetime.datetime.today().weekday()]} {datetime.datetime.today().day} {month[datetime.datetime.today().month-1]}:\n\n" + itogo
+        else:
+            itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+    else:
+        if datetime.datetime.today().weekday() != 5:
+            itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
+        else:
+            itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
+    return itogo
+
+
+def parsing_lines_to_schedule(para, plain_raspisanie, tables):
+    if len(tables) > 1:  # выстрелит в колено если опять начнется мракобесие с таблицами
         for index in range(len(tables[1])):
             group = tables[1][0][index]
             if group == name_of_group:
@@ -71,10 +111,12 @@ def get_rsp(day):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
                         kab = tables[1][3][index]
-                        if kab != kab: para.append(
-                            f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else: para.append(
-                            f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                        if kab != kab:
+                            para.append(
+                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                        else:
+                            para.append(
+                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
                 elif (paras == "Нет"):
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
@@ -88,10 +130,12 @@ def get_rsp(day):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
                         kab = tables[1][3][index]
-                        if kab != kab: para.append(
-                            f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else: para.append(
-                            f"Для {group[6:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
+                        if kab != kab:
+                            para.append(
+                                f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
+                        else:
+                            para.append(
+                                f"Для {group[6:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
                 elif (paras == "Нет"):
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
@@ -99,56 +143,48 @@ def get_rsp(day):
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
     else:
-        try:
-            for index in range(len(tables[0])):
-                group = tables[0][0][index]
-                if group == name_of_group:
-                    has_group = True
-                    paras = tables[0][2][index]
-                    if (paras == "По расписанию"):
-                        for nomer in (tables[0][1][index]).split(','):
-                            nomer = int(nomer) - 1
-                            kab = tables[0][3][index]
-                            if kab != kab: para.append(
+        for index in range(len(tables[0])):
+            group = tables[0][0][index]
+            if group == name_of_group:
+                has_group = True
+                paras = tables[0][2][index]
+                if (paras == "По расписанию"):
+                    for nomer in (tables[0][1][index]).split(','):
+                        nomer = int(nomer) - 1
+                        kab = tables[0][3][index]
+                        if kab != kab:
+                            para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                            else: para.append(
+                        else:
+                            para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[0][3][index]}")
-                    elif (paras == "Нет"):
-                        para.append(
-                            f"Номер пары: {tables[0][1][index]}  Пара: отменена")
-                    else:
-                        para.append(
-                            f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
-                elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
-                    has_group = True
-                    paras = tables[0][2][index]
-                    if (paras == "По расписанию"):
-                        for nomer in (tables[0][1][index]).split(','):
-                            nomer = int(nomer) - 1
-                            kab = tables[0][3][index]
-                            if kab != kab: para.append(
+                elif (paras == "Нет"):
+                    para.append(
+                        f"Номер пары: {tables[0][1][index]}  Пара: отменена")
+                else:
+                    para.append(
+                        f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
+            elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
+                has_group = True
+                paras = tables[0][2][index]
+                if (paras == "По расписанию"):
+                    for nomer in (tables[0][1][index]).split(','):
+                        nomer = int(nomer) - 1
+                        kab = tables[0][3][index]
+                        if kab != kab:
+                            para.append(
                                 f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                            else: para.append(
+                        else:
+                            para.append(
                                 f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                    elif (paras == "Нет"):
-                        para.append(
-                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
-                    else:
-                        para.append(
-                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
-        except:
-            return "Расписание есть на сайте, но у меня не получилось его разобрать :("
-    if(has_group):
-        itogo = gen_message(para)
-    else:
-        itogo = default_rasp(plain_raspisanie)
-    if day == "Today":
-        if datetime.datetime.today().weekday != 5: itogo = f"Расписание на {weekday[datetime.datetime.today().weekday()]} {datetime.datetime.today().day} {month[datetime.datetime.today().month-1]}:\n\n" + itogo
-        else: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
-    else:
-        if datetime.datetime.today().weekday() != 5: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=1)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=1)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=1)).month-1]}:\n\n" + itogo
-        else: itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
-    return itogo
+                elif (paras == "Нет"):
+                    para.append(
+                        f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
+                else:
+                    para.append(
+                        f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
+
+    return has_group
 
 
 def get_from_site(day):
@@ -170,10 +206,16 @@ async def waiter_checker():
     while(True):
         print("Считаю сколько спать")
         weekday_number = datetime.datetime.today().weekday()
-        if datetime.datetime.today().hour < then_start_to_check: time_to_sleep = datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) - datetime.datetime.now()
+        if datetime.datetime.today().hour < hour_when_start_checking:
+            time_to_sleep = datetime.datetime.now().replace(hour=hour_when_start_checking,
+                                                            minute=0, second=0, microsecond=0) - datetime.datetime.now()
         else:
-            if weekday_number != 5: time_to_sleep = (datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
-            else: time_to_sleep = (datetime.datetime.now().replace(hour=then_start_to_check, minute=0, second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
+            if weekday_number != 5:
+                time_to_sleep = (datetime.datetime.now().replace(hour=hour_when_start_checking, minute=0,
+                                 second=0, microsecond=0) + datetime.timedelta(1) - datetime.datetime.now())
+            else:
+                time_to_sleep = (datetime.datetime.now().replace(hour=hour_when_start_checking, minute=0,
+                                 second=0, microsecond=0) + datetime.timedelta(2) - datetime.datetime.now())
         seconds_to_sleep = time_to_sleep.total_seconds()
         await wait(seconds_to_sleep)
         resp = None
@@ -199,92 +241,28 @@ def checker():
 
     try:
         contents, schedule_on_site = get_from_site("tomorrow")
-        if not schedule_on_site: return None
+        if not schedule_on_site:
+            return None
         tables = pd.read_html(contents, thousands=None)
         para = []
         has_group = False
-        plain_raspisanie = plain_rasp((datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
-        try:
-            for index in range(len(tables[1])):
-                group = tables[1][0][index]
-                if group == name_of_group:
-                    has_group = True
-                    paras = tables[1][2][index]
-                    if (paras == "По расписанию"):
-                        for nomer in (tables[0][1][index]).split(','):
-                            para.append(
-                                f"Номер пары: {nomer}  Пара: {plain_raspisanie[0][2][nomer]} Кабинет: {plain_raspisanie[0][3][nomer]}")
-                    elif (paras == "Нет"):
-                        para.append(
-                            f"Номер пары: {tables[1][1][index]}  Пара: отменена")
-                    else:
-                        para.append(
-                            f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
-                elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
-                    has_group = True
-                    paras = tables[0][2][index]
-                    if (paras == "По расписанию"):
-                        for nomer in (tables[0][1][index]).split(','):
-                            nomer = int(nomer) - 1
-                            kab = tables[0][3][index]
-                            if kab != kab: para.append(
-                                f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                            else: para.append(
-                                f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                    elif (paras == "Нет"):
-                        para.append(
-                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
-                    else:
-                        para.append(
-                            f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
-        except:
-            try:
-                for index in range(len(tables[0])):
-                    group = tables[0][0][index]
-                    if group == name_of_group:
-                        has_group = True
-                        paras = tables[0][2][index]
-                        if (paras == "По расписанию"):
-                            for nomer in (tables[0][1][index]).split(','):
-                                nomer = int(nomer) - 1
-                                para.append(
-                                    f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        elif (paras == "Нет"):
-                            para.append(
-                                f"Номер пары: {tables[0][1][index]}  Пара: отменена")
-                        else:
-                            para.append(
-                                f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
-                    elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
-                        has_group = True
-                        paras = tables[0][2][index]
-                        if (paras == "По расписанию"):
-                            for nomer in (tables[0][1][index]).split(','):
-                                nomer = int(nomer) - 1
-                                kab = tables[0][3][index]
-                                if kab != kab: para.append(
-                                    f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                                else: para.append(
-                                    f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                        elif (paras == "Нет"):
-                            para.append(
-                                f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
-                        else:
-                            para.append(
-                                f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
-            except:
-                return "Расписание есть на сайте, но у меня не получилось его разобрать :("
+        plain_raspisanie = plain_rasp(
+            (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
+        has_group = parsing_lines_to_schedule(para, plain_raspisanie, tables)
         if(has_group):
             itogo = gen_message(para)
         else:
             itogo = default_rasp(plain_raspisanie)
     except:
         print("Чекнул, чуть не умер, но выжил")
+    tomorrow_rasp.cache_clear()
     weekday_number = datetime.datetime.today().weekday()
     tommorrow = datetime.datetime.today() + datetime.timedelta(days=1)
     day_plus_two = datetime.datetime.today() + datetime.timedelta(days=2)
-    if weekday_number != 5: itogo = f"Ежедневная рассылка расписания на {weekday[tommorrow.weekday()]} {tommorrow.day} {month[tommorrow.month-1]}:\n\n" + itogo
-    else: itogo = f"Ежедневная рассылка расписания на {weekday[day_plus_two.weekday()]} {day_plus_two.day} {month[day_plus_two.month-1]}:\n\n" + itogo
+    if weekday_number != 5:
+        itogo = f"Ежедневная рассылка расписания на {weekday[tommorrow.weekday()]} {tommorrow.day} {month[tommorrow.month-1]}:\n\n" + itogo
+    else:
+        itogo = f"Ежедневная рассылка расписания на {weekday[day_plus_two.weekday()]} {day_plus_two.day} {month[day_plus_two.month-1]}:\n\n" + itogo
     return itogo
 
 
@@ -345,9 +323,13 @@ async def start(message: types.Message):
 async def cmd_start(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    # try:
+    subscribe(message)
+
+
+def subscribe(message):
     chat_id = message.chat.id
-    if not os.path.isfile("config.json"): open("config.json", "x").close()
+    if not os.path.isfile("config.json"):
+        open("config.json", "x").close()
     with open("config.json", "r") as config:
         file_not_empty = os.stat("config.json").st_size > 0
         if file_not_empty:
@@ -386,13 +368,15 @@ async def cmd_start(message: types.Message):
                     asyncio.create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
-# @bot.message_handler(commands=["test", "Test"])
-# async def cmd_start(message: types.Message):
-#     await bot.reply_to(message, checker())
+
+@bot.message_handler(commands=["test", "Test"])
+async def cmd_start(message: types.Message):
+    await bot.reply_to(message, checker())
+
 
 @bot.message_handler(commands=["Today", "today"])
 async def today(message: types.Message):
-    rasp = get_rsp("Today")
+    rasp = today_rasp()
     asyncio.create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
@@ -400,7 +384,7 @@ async def today(message: types.Message):
 
 @bot.message_handler(commands=["Tomorrow", "tomorrow"])
 async def tommorrow(message: types.Message):
-    rasp = get_rsp("Tomorrow")
+    rasp = tomorrow_rasp()
     asyncio.create_task(dump_logs(
         f"Issued \"Tomorrow\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
@@ -412,15 +396,26 @@ async def unknown_command(message):
     await bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
 
 
+async def invalidate_cache():
+    while(True):
+        nextday = ((datetime.datetime.now().replace(hour=0, minute=0, second=0) +
+                   datetime.timedelta(1)) - datetime.datetime.now()).total_seconds()
+        await wait(nextday)
+        tomorrow_rasp.cache_clear()
+        today_rasp.cache_clear()
+
+
 async def init():
-    asyncio.create_task(inf_pooling())
+    create_task(inf_pooling())
     print("Я запустился")
-    await asyncio.create_task(waiter_checker())
+    create_task(invalidate_cache())
+    create_task(waiter_checker())
+
 
 async def inf_pooling():
     while(True):
         try:
-            await bot.polling(none_stop=True,timeout=30)
+            await bot.polling(none_stop=True, timeout=30)
         except Exception as e:
             dump_logs(f"\nException created: {e}")
 
