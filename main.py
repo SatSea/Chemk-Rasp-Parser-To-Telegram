@@ -101,6 +101,7 @@ def get_rsp(day):
 
 
 def parsing_lines_to_schedule(para, plain_raspisanie, tables):
+    has_group = False
     if len(tables) > 1:  # выстрелит в колено если опять начнется мракобесие с таблицами
         for index in range(len(tables[1])):
             group = tables[1][0][index]
