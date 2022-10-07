@@ -410,7 +410,7 @@ async def init():
     create_task(inf_pooling())
     print("Я запустился")
     create_task(invalidate_cache())
-    create_task(waiter_checker())
+    await asyncio.create_task(waiter_checker())
 
 
 async def inf_pooling():
