@@ -20,6 +20,7 @@ load_dotenv("Env/Tokens.env")
 TOKEN = os.getenv('TOKEN')
 groups = os.getenv('GROUP')
 name_of_group = os.getenv('NAME_OF_GROUP')
+allowed_ids = list(map(int,os.getenv('ALLOWED_IDS').split(',')))
 hour_when_start_checking = int(os.getenv('START_HOUR'))
 bot = AsyncTeleBot(TOKEN)
 TODAY = TOMORROW = None
@@ -288,7 +289,7 @@ async def FAQ(message: types.Message):
 4\)Q: Сколько будет работать этот бот?
   A: Да\.
 5\)Q: Код будет выложен?
-  A: Qui quaerit, reperit
+  A: https://github\.com/SatSea/Chemk\-Rasp\-Parser\-To\-Telegram
 6\)Q: Почему бот иногда так долго отвечает?
   A: а\) Все таки одного ядро уже не хватает :\)
 б\) Период рассылки сообщений
@@ -372,7 +373,10 @@ def subscribe(message):
 
 @bot.message_handler(commands=["test", "Test"])
 async def cmd_start(message: types.Message):
-    await bot.reply_to(message, checker())
+    if message.chat.id in allowed_ids:
+        await bot.reply_to(message, checker())
+    else:
+        await bot.reply_to(message, "Неа, тебе не разрешено")
 
 
 @bot.message_handler(commands=["Today", "today"])
