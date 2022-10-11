@@ -283,7 +283,7 @@ async def FAQ(message: types.Message):
 1\)Q: Почему бот такой кривой?
   A: Потому что, бюджета не хватило даже на банку пива и разрабатывало все это долбоеб\(ка\) на разработке
 2\)Q: Поддержка других групп?
-  A: Нет, поддержки нескольких групп пока что не планируется\.
+  A: Когда-нибудь поддержка других групп появится, но сейчас не планируется\.
 3\)Q: Поддержка других корпусов?
   A: Нет, поддержки других корпусов не будет\.
 4\)Q: Сколько будет работать этот бот?
@@ -318,6 +318,7 @@ async def start(message: types.Message):
     await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо оргранизацией с аббревиатурой ЧЭМК.
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
 Если вы знаете что можно поправить, то пишите.
+Другие группы помимо Ир1-20 не поддерживает...
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=keyboard)
 
 
@@ -353,7 +354,7 @@ def subscribe(message):
                         message, "[WIP]Успешно подписан на обновление расписания"))
                 json1 = json.dumps([{"id": ids}])
                 configs[0]["id"] = json1
-                config.write(configs)
+                config.write(json1)
         else:
             ids = []
             ids.append(chat_id)
@@ -371,10 +372,20 @@ def subscribe(message):
                         message, "[WIP]Успешно подписан на обновление расписания"))
 
 
+async def fast_checker():
+    print("Тестовый поиск расписания запущен")
+    resp = checker()
+    with open("config.json", "r") as config:
+        ids = json.loads(config.read())
+        print(ids[0]["id"])
+        for people_id in ids[0]["id"]:
+            create_task(dispatch(people_id, resp))
+
+
 @bot.message_handler(commands=["test", "Test"])
 async def cmd_start(message: types.Message):
     if message.chat.id in allowed_ids:
-        await bot.reply_to(message, checker())
+        create_task(fast_checker())
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
 
@@ -422,7 +433,7 @@ async def inf_pooling():
         try:
             await bot.polling(none_stop=True, timeout=30)
         except Exception as e:
-            dump_logs(f"\nException created: {e}")
+            await dump_logs(f"\nException created: {e}")
 
 
 if __name__ == "__main__":
