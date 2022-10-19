@@ -312,6 +312,8 @@ async def FAQ(message: types.Message):
 
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
+    asyncio.create_task(dump_logs(
+        f"Issued \"About\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, "Проект был создан: Satsea(aka Aestas) [Код и изначальная идея] и Lysk(aka SashaGHT) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написаного текста]"))
 
 
