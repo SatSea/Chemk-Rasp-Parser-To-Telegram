@@ -65,14 +65,14 @@ def tomorrow_rasp():
 
 
 def get_rsp(day):
+    print("Я не кэширован!")
     if datetime.datetime.today().strftime('%A') == "Sunday" and day == "Today":
         return "Сегодня Воскресенье, какое раписание на сегодня?\nЧтобы узнать расписание на завтра используй /Tomorrow "
-    contents, schedule_on_site = get_from_site(day)
-    print("Я не кэширован!")
+    contents = get_from_site(day)
+    if contents is None:
+        return "На сайте пока что нет расписания :("
     para = []
     has_group = False
-    if not schedule_on_site:
-        return "На сайте пока что нет расписания :("
     if day == "Today":
         plain_raspisanie = plain_rasp(datetime.datetime.today().strftime('%A'))
     else:
@@ -195,7 +195,9 @@ def get_from_site(day):
     contents = responce.text
     soup = BeautifulSoup(contents, "html.parser")
     schedule_on_site = not (soup.find("div", class_="Section1"))
-    return contents, schedule_on_site
+    if schedule_on_site:
+        return contents
+    return None
 
 
 def gen_message(para):
@@ -242,8 +244,8 @@ def checker():
     print("Чекаю расписание")
 
     try:
-        contents, schedule_on_site = get_from_site("tomorrow")
-        if not schedule_on_site:
+        contents = get_from_site("tomorrow")
+        if contents is None:
             return None
         tables = pd.read_html(contents, thousands=None)
         para = []
