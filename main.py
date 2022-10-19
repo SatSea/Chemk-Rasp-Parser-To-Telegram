@@ -281,6 +281,8 @@ async def wait(time):
 
 @bot.message_handler(commands=["FAQ", "faq"])
 async def FAQ(message: types.Message):
+    asyncio.create_task(dump_logs(
+        f"Issued \"FAQ\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, """FAQ: 
 1\)Q: Почему бот такой кривой?
   A: Потому что, бюджета не хватило даже на банку пива и разрабатывало все это долбоеб\(ка\) на разработке
@@ -334,7 +336,7 @@ async def start(message: types.Message):
 @bot.message_handler(commands=["Subscribe", "subscribe"])
 async def cmd_start(message: types.Message):
     asyncio.create_task(dump_logs(
-        f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Subscribe\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     subscribe(message)
 
 
@@ -391,8 +393,10 @@ async def fast_checker():
             create_task(dispatch(people_id, resp))
 
 
-@bot.message_handler(commands=["test", "Test"])
+@bot.message_handler(commands=["Test", "test"])
 async def cmd_start(message: types.Message):
+    asyncio.create_task(dump_logs(
+        f"Issued \"Test\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id in allowed_ids:
         create_task(fast_checker())
     else:
