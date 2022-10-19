@@ -308,7 +308,7 @@ async def FAQ(message: types.Message):
 
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
-    create_task(bot.reply_to(message, "Проект был создан: Satsea(aka Aestas) [Код и изначальная идея], Lysk(aka SashaGHT) [Немного будущего кода (для поддержки нескольких групп) и бóльшая часть написаного текста]"))
+    create_task(bot.reply_to(message, "Проект был создан: Satsea(aka Aestas) [Код и изначальная идея] и Lysk(aka SashaGHT) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написаного текста]"))
 
 
 def create_task(task):
