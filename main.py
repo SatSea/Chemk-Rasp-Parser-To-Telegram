@@ -287,9 +287,9 @@ async def FAQ(message: types.Message):
 1\)Q: Почему бот такой кривой?
   A: Потому что, бюджета не хватило даже на банку пива и разрабатывало все это долбоеб\(ка\) на разработке
 2\)Q: Поддержка других групп?
-  A: Когда\-нибудь поддержка других групп появится, но сейчас не планируется\.
+  A: Когда\-нибудь поддержка других групп появится \(работы в этом направлении уже ведутся, stay tuned\(вся свежая информация в нашем дискорд сервере {discord_url}\)\)\.
 3\)Q: Поддержка других корпусов?
-  A: Нет, поддержки других корпусов не будет\.
+  A: Скорее нет, чем да, поддержка других корпусов потребует большого количества работы и скорее всего не будет реализована\.
 4\)Q: Сколько будет работать этот бот?
   A: Да\.
 5\)Q: Код будет выложен?
@@ -298,14 +298,14 @@ async def FAQ(message: types.Message):
   A: а\) Все таки одного ядро уже не хватает :\)
 б\) Период рассылки сообщений
 в\) Опять сайт ЧЭМК ограничил скорость для меня, опять\.\.\.\.
-г\) Я накосячил где\-то \(Поймите и простите\)
-д\) Бот ушел опять в бесконечную петлю
+г\) Произошел форс\-мажор \(Поймите и простите\)
+~д\) Бот ушел опять в бесконечную петлю~ 
 7\)Q: GDPR? \(aka Политика конфиденциальности\)
   A: Да, мы собираем некоторую информацию о пользователях \(Ник, время, исполненная команда, статус выполнения команды\)
-  *Но данные удаляются по первому требованию пользователя или по истечению 30 дней \(Граждане ЕС не пользуйтесь этим ботом, пж, пж,пж\)*\.
+  *Но данные удаляются по первому требованию пользователя или по истечению 30 дней*\.
 8\) Ебни анекдот
   A: Был такой легендарный мужик, который в 20\-е годы написал письмо в ЧЭМК\. Написал он примерно следующее: "Я уже 3 года считаю таблицы с расписанием у вас на сайте \- их то 2, то 3, то 4, а иногда и 1\. Вы там сумасшедшие что ли все?\"
-9\)Q: Кто создавал?
+9\)Q: Кто принимал участие в создании бота?
   A: /About
   """, parse_mode='MarkdownV2'))
 
@@ -314,7 +314,8 @@ async def FAQ(message: types.Message):
 async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, "Проект был создан: Satsea(aka Aestas) [Код и изначальная идея] и Lysk(aka SashaGHT) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написаного текста]"))
+    create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
+    create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032664796153258006/cat-coder.gif'))
 
 
 def create_task(task):
@@ -328,7 +329,7 @@ async def start(message: types.Message):
     keyboard.add(*buttons)
     asyncio.create_task(dump_logs(
         f"Issued \"start\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо оргранизацией с аббревиатурой ЧЭМК.
+    await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо организацией с аббревиатурой ЧЭМК.
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
 Если вы знаете что можно поправить, то пишите.
 Другие группы помимо Ир1-20 пока что не поддерживает...
@@ -356,15 +357,17 @@ def subscribe(message):
                     try:
                         ids.remove(chat_id)
                     except:
-                        asyncio.create_task(bot.reply_to(
-                            message, "[WIP]Не получилось отписаться от обновлений расписания"))
+                        create_task(bot.reply_to(
+                            message, "Не получилось отписаться от обновлений расписания"))
                     else:
-                        asyncio.create_task(bot.reply_to(
-                            message, "[WIP]Успешно получилось отписаться от обновление расписания"))
+                        create_task(bot.reply_to(
+                            message, "Успешно получилось отписаться от обновлений расписания [See You Space Cowboy...]"))
+                        create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
                 else:
                     ids.append(chat_id)
-                    asyncio.create_task(bot.reply_to(
-                        message, "[WIP]Успешно подписан на обновление расписания"))
+                    create_task(bot.reply_to(
+                        message, "Успешно подписан на обновления расписания"))
+                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 json1 = json.dumps([{"id": ids}])
                 configs[0]["id"] = json1
                 config.write(json1)
@@ -377,12 +380,15 @@ def subscribe(message):
                     ids = configs[0]["id"]
                     configs[0]["id"] = json1
                     config.write(configs)
-                    asyncio.create_task(bot.reply_to(
+                    create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
+                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 except:
                     config.write(json1)
-                    asyncio.create_task(bot.reply_to(
+                    create_task(bot.reply_to(
                         message, "[WIP]Успешно подписан на обновление расписания"))
+                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+
 
 
 async def fast_checker():
@@ -397,7 +403,7 @@ async def fast_checker():
 
 @bot.message_handler(commands=["Test", "test"])
 async def cmd_start(message: types.Message):
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"Test\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id in allowed_ids:
         create_task(fast_checker())
