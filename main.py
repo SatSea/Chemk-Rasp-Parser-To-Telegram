@@ -315,7 +315,7 @@ async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
-    create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032664796153258006/cat-coder.gif'))
+    create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
 
 def create_task(task):
@@ -381,12 +381,12 @@ def subscribe(message):
                     configs[0]["id"] = json1
                     config.write(configs)
                     create_task(bot.reply_to(
-                        message, "[WIP]Успешно подписан на обновление расписания"))
+                        message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 except:
                     config.write(json1)
                     create_task(bot.reply_to(
-                        message, "[WIP]Успешно подписан на обновление расписания"))
+                        message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
 
 
@@ -409,6 +409,8 @@ async def cmd_start(message: types.Message):
         create_task(fast_checker())
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+
 
 
 @bot.message_handler(commands=["Today", "today"])
