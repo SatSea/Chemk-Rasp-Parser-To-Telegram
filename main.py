@@ -17,12 +17,12 @@ from telebot.async_telebot import AsyncTeleBot
 
 # region some needed vars
 load_dotenv("Env/Tokens.env")
-TOKEN = os.getenv('TOKEN')
+token = os.getenv('TOKEN')
 groups = os.getenv('GROUP')
 name_of_group = os.getenv('NAME_OF_GROUP')
 allowed_ids = list(map(int,os.getenv('ALLOWED_IDS').split(',')))
 hour_when_start_checking = int(os.getenv('START_HOUR'))
-bot = AsyncTeleBot(TOKEN)
+bot = AsyncTeleBot(token)
 TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня",
@@ -307,7 +307,30 @@ async def FAQ(message: types.Message):
   A: Был такой легендарный мужик, который в 20\-е годы написал письмо в ЧЭМК\. Написал он примерно следующее: "Я уже 3 года считаю таблицы с расписанием у вас на сайте \- их то 2, то 3, то 4, а иногда и 1\. Вы там сумасшедшие что ли все?\"
 9\)Q: Кто принимал участие в создании бота?
   A: /About
+10\)Q: Сколько часов заняла разработка этого бота?
+  A: Порядка 15\-20 часов написания кода, 10 человеко\-часов тестирования
+11\)Q: Запости кота
+  A: /cat
+12\)Q: Как можно помочь проекту? (Нам крайне необходим человек, который может в русский язык)
+  A: а\)Написать о ошибках
+б\)Если могете в код, можете написать мне в гите, чтобы я открыл закрытую репу с кодом
   """, parse_mode='MarkdownV2'))
+
+
+async def cat_pic(chat_id):
+    cat = json.loads(requests.get("https://meow.senither.com/v1/random").text)
+    if cat['data']['type'] == 'mp4':
+        create_task(bot.send_animation(chat_id,cat['data']['url']))
+    else:
+        create_task(bot.send_photo(chat_id,cat['data']['url']))
+
+
+@bot.message_handler(commands=["Cat", "cat"])
+async def cat(message: types.Message):
+    asyncio.create_task(dump_logs(
+        f"Issued \"Cat\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    create_task(cat_pic(message.chat.id))
+
 
 
 @bot.message_handler(commands=["About", "about"])
