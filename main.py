@@ -100,93 +100,36 @@ def get_rsp(day):
             itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     return itogo
 
+def get_plain_rasp(name,day):
+    return "nomer","para","kab"
 
-def parsing_lines_to_schedule(para, plain_raspisanie, tables):
-    has_group = False
-    if len(tables) > 1:  # выстрелит в колено если опять начнется мракобесие с таблицами
-        for index in range(len(tables[1])):
-            group = tables[1][0][index]
-            if group == name_of_group:
-                has_group = True
-                paras = tables[1][2][index]
-                if (paras == "По расписанию"):
-                    for nomer in (tables[1][1][index]).split(','):
-                        nomer = int(nomer) - 1
-                        kab = tables[1][3][index]
-                        if kab != kab:
-                            para.append(
-                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else:
-                            para.append(
-                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                elif (paras == "Нет"):
-                    para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: отменена")
+def parsing_lines_to_schedule(para, plain_raspisanie, tables): # I am very embarrassed about this code
+    """
+    I am very ashamed of this code, someone will need to rewrite it ASAP.
+    """
+    paras = {}
+    itog = {}
+    for i,cell in enumerate(tables[0][2]):
+        name_of_group = tables[0][0][i]
+        if name_of_group == name_of_group:
+            name_without_subgroup = name_of_group[:6]
+            if type(name_of_group) is str and len(name_of_group) <= 13 and name_of_group != "Группа":
+                if name_without_subgroup not in paras:
+                    paras[name_without_subgroup]=[]
+                test = name_of_group[-3:]
+                if cell == "По расписанию":
+                    tomorrow = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A')
+                    nomer,para, kab = plain_raspisanie[name_without_subgroup][tomorrow]
                 else:
-                    para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
-            elif group == (name_of_group + " 1 п/г") or (name_of_group + " 2 п/г"):
-                has_group = True
-                paras = tables[1][2][index]
-                if (paras == "По расписанию"):
-                    for nomer in (tables[1][1][index]).split(','):
-                        nomer = int(nomer) - 1
-                        kab = tables[1][3][index]
-                        if kab != kab:
-                            para.append(
-                                f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else:
-                            para.append(
-                                f"Для {group[6:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                elif (paras == "Нет"):
-                    para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: отменена")
+                    nomer,para, kab = tables[0][1][i], cell, tables[0][3][i]
+                if name_of_group[-3:] == "п/г":
+                    rasp = f"Для {name_of_group[-5:]} Номер {nomer} Пара {para} Кабинет {kab}" if cell != "Нет" else f"Для {name_of_group[-5:]} Номер {nomer} Пара {para}"
+                    paras[name_without_subgroup].append(rasp)
                 else:
-                    para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
-    else:
-        for index in range(len(tables[0])):
-            group = tables[0][0][index]
-            if group == name_of_group:
-                has_group = True
-                paras = tables[0][2][index]
-                if (paras == "По расписанию"):
-                    for nomer in (tables[0][1][index]).split(','):
-                        nomer = int(nomer) - 1
-                        kab = tables[0][3][index]
-                        if kab != kab:
-                            para.append(
-                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else:
-                            para.append(
-                                f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[0][3][index]}")
-                elif (paras == "Нет"):
-                    para.append(
-                        f"Номер пары: {tables[0][1][index]}  Пара: отменена")
-                else:
-                    para.append(
-                        f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
-            elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
-                has_group = True
-                paras = tables[0][2][index]
-                if (paras == "По расписанию"):
-                    for nomer in (tables[0][1][index]).split(','):
-                        nomer = int(nomer) - 1
-                        kab = tables[0][3][index]
-                        if kab != kab:
-                            para.append(
-                                f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
-                        else:
-                            para.append(
-                                f"Для {group[8:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                elif (paras == "Нет"):
-                    para.append(
-                        f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: отменена")
-                else:
-                    para.append(
-                        f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
-
-    return has_group
+                    rasp = f"Номер пары {nomer} Пара {para} Кабинет {kab}" if cell != "Нет" else f"Номер пары {nomer} Пара {para}"
+                    paras[name_without_subgroup].append(rasp)
+    for name, pari in paras.items(): itog[name] = "\n".join(pari)
+    return itog
 
 
 def get_from_site(day):
