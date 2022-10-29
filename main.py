@@ -1,12 +1,12 @@
 import asyncio
 import datetime
 import json
-import os
 from cachetools import cached, TTLCache
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from os import getenv, path
 from dotenv import load_dotenv
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
@@ -17,11 +17,11 @@ from telebot.async_telebot import AsyncTeleBot
 
 # region some needed vars
 load_dotenv("Env/Tokens.env")
-token = os.getenv('TOKEN')
-groups = os.getenv('GROUP')
-name_of_group = os.getenv('NAME_OF_GROUP')
-allowed_ids = list(map(int,os.getenv('ALLOWED_IDS').split(',')))
-hour_when_start_checking = int(os.getenv('START_HOUR'))
+token = getenv('TOKEN')
+groups = getenv('GROUP')
+name_of_group = getenv('NAME_OF_GROUP')
+allowed_ids = list(map(int, getenv('ALLOWED_IDS').split(',')))
+hour_when_start_checking = int(getenv('START_HOUR'))
 bot = AsyncTeleBot(token)
 TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
@@ -100,35 +100,40 @@ def get_rsp(day):
             itogo = f"Расписание на {weekday[(datetime.datetime.today() + datetime.timedelta(days=2)).weekday()]} {(datetime.datetime.today() + datetime.timedelta(days=2)).day} {month[(datetime.datetime.today() + datetime.timedelta(days=2)).month-1]}:\n\n" + itogo
     return itogo
 
-def get_plain_rasp(name,day):
-    return "nomer","para","kab"
 
-def parsing_lines_to_schedule(para, plain_raspisanie, tables): # I am very embarrassed about this code
+def get_plain_rasp(name, day):
+    return "nomer", "para", "kab"
+
+
+# I am very embarrassed about this code
+def parsing_lines_to_schedule(para, plain_raspisanie, tables):
     """
     I am very ashamed of this code, someone will need to rewrite it ASAP.
     """
     paras = {}
     itog = {}
-    for i,cell in enumerate(tables[0][2]):
+    for i, cell in enumerate(tables[0][2]):
         name_of_group = tables[0][0][i]
         if name_of_group == name_of_group:
             name_without_subgroup = name_of_group[:6]
             if type(name_of_group) is str and len(name_of_group) <= 13 and name_of_group != "Группа":
                 if name_without_subgroup not in paras:
-                    paras[name_without_subgroup]=[]
+                    paras[name_without_subgroup] = []
                 test = name_of_group[-3:]
                 if cell == "По расписанию":
-                    tomorrow = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A')
-                    nomer,para, kab = plain_raspisanie[name_without_subgroup][tomorrow]
+                    tomorrow = (datetime.datetime.today() +
+                                datetime.timedelta(days=1)).strftime('%A')
+                    nomer, para, kab = plain_raspisanie[name_without_subgroup][tomorrow]
                 else:
-                    nomer,para, kab = tables[0][1][i], cell, tables[0][3][i]
+                    nomer, para, kab = tables[0][1][i], cell, tables[0][3][i]
                 if name_of_group[-3:] == "п/г":
                     rasp = f"Для {name_of_group[-5:]} Номер {nomer} Пара {para} Кабинет {kab}" if cell != "Нет" else f"Для {name_of_group[-5:]} Номер {nomer} Пара {para}"
                     paras[name_without_subgroup].append(rasp)
                 else:
                     rasp = f"Номер пары {nomer} Пара {para} Кабинет {kab}" if cell != "Нет" else f"Номер пары {nomer} Пара {para}"
                     paras[name_without_subgroup].append(rasp)
-    for name, pari in paras.items(): itog[name] = "\n".join(pari)
+    for name, pari in paras.items():
+        itog[name] = "\n".join(pari)
     return itog
 
 
@@ -262,9 +267,9 @@ async def FAQ(message: types.Message):
 async def cat_pic(chat_id):
     cat = json.loads(requests.get("https://meow.senither.com/v1/random").text)
     if cat['data']['type'] == 'mp4':
-        create_task(bot.send_animation(chat_id,cat['data']['url']))
+        create_task(bot.send_animation(chat_id, cat['data']['url']))
     else:
-        create_task(bot.send_photo(chat_id,cat['data']['url']))
+        create_task(bot.send_photo(chat_id, cat['data']['url']))
 
 
 @bot.message_handler(commands=["Cat", "cat"])
@@ -274,13 +279,14 @@ async def cat(message: types.Message):
     create_task(cat_pic(message.chat.id))
 
 
-
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
-    create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
+    create_task(bot.reply_to(
+        message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
+    create_task(bot.send_animation(message.chat.id,
+                'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
 
 def create_task(task):
@@ -305,55 +311,67 @@ async def start(message: types.Message):
 async def cmd_start(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"Subscribe\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    subscribe(message)
+    create_task(subscribe(message))
 
 
-def subscribe(message):
-    chat_id = message.chat.id
-    if not os.path.isfile("config.json"):
-        open("config.json", "x").close()
-    with open("config.json", "r") as config:
-        file_not_empty = os.stat("config.json").st_size > 0
-        if file_not_empty:
-            configs = json.loads(config.read())
-            with open("config.json", "w") as config:
-                ids = configs[0]["id"]
-                if(chat_id in ids):
-                    try:
-                        ids.remove(chat_id)
-                    except:
-                        create_task(bot.reply_to(
-                            message, "Не получилось отписаться от обновлений расписания"))
-                    else:
-                        create_task(bot.reply_to(
-                            message, "Успешно получилось отписаться от обновлений расписания [See You Space Cowboy...]"))
-                        create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
-                else:
-                    ids.append(chat_id)
-                    create_task(bot.reply_to(
-                        message, "Успешно подписан на обновления расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
-                json1 = json.dumps([{"id": ids}])
-                configs[0]["id"] = json1
-                config.write(json1)
+def read_json(name):
+    if not path.exists(name):
+        with open(name, "x", encoding="utf-8"):
+            pass
+        return None
+    with open(name, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def write_data(name, data):
+    if not path.exists(name):
+        with open(name, "x", encoding="utf-8"):
+            pass
+    with open(name, "w", encoding="utf-8") as f:
+        f.write(data)
+
+
+def check_for_id(check_id, group):
+    ids = read_json("ids.json")
+    if group not in ids:
+        ids[group] = []
+    if check_id in ids[group]:
+        ids[group].remove(check_id)
+        is_deleted = True
+    else:
+        ids[group].append(check_id)
+        is_deleted = False
+    write_data("ids.json", json.dumps(ids, ensure_ascii=False))
+    return is_deleted
+
+
+async def subscribe(message):
+    groups = ["Ит1-22", "Са1-21", "Са3-21", "С1-21", "С3-21", "Ир1-21", "Ир3-21", "Ир5-21", "С1-20", "С3-20", "Ип1-20", "Ип3-20", "Ир1-20", "Ир3-20", "Ир5-20",
+              "Кс1-20", "Кс3-20", "Кс5-20", "Ип1-19", "Ип3-19", "Ир1-19", "Ир3-19", "Ир5-19", "Кс1-19", "Кс3-19", "Кс5-19", "С1-19", "С3-19", "С1-18", "С3-18"]
+    row = []
+    keyboard = []
+    i = 0
+    for i, button in enumerate(groups):
+        row.append(types.InlineKeyboardButton(
+            button, callback_data="rasp_"+button))
+        if i % 4 == 0:
+            keyboard.append(row)
+            row = []
+    keyboard.append(row)
+    reply_markup = types.InlineKeyboardMarkup(keyboard, row_width=16)
+    create_task(bot.send_message(message.chat.id,
+                "Выбери группу на расписание которой ты хочешь подписаться", reply_markup=reply_markup))
+
+
+@bot.callback_query_handler(func=lambda call: True)
+async def callback_inline(call):
+    if call.data[:5] == "rasp_":
+        if check_for_id(call.from_user.id, call.data):
+            create_task(bot.send_message(
+                call.from_user.id, f"Успешно отписался от рассылки расписания для группы {call.data}"))
         else:
-            ids = []
-            ids.append(chat_id)
-            json1 = json.dumps([{"id": ids}])
-            with open("config.json", "w") as config:
-                try:
-                    ids = configs[0]["id"]
-                    configs[0]["id"] = json1
-                    config.write(configs)
-                    create_task(bot.reply_to(
-                        message, "Успешно подписан на обновление расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
-                except:
-                    config.write(json1)
-                    create_task(bot.reply_to(
-                        message, "Успешно подписан на обновление расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
-
+            create_task(bot.send_message(
+                call.from_user.id, f"Успешно подписался на рассылку расписания для группы {call.data}"))
 
 
 async def fast_checker():
@@ -374,8 +392,8 @@ async def cmd_start(message: types.Message):
         create_task(fast_checker())
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
-
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
 
 
 @bot.message_handler(commands=["Today", "today"])

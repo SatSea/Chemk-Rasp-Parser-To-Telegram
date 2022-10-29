@@ -5,3 +5,4 @@ config.json
 Tokens.env
 Env/Tokens.env
 .vscode/*
+ids.json
