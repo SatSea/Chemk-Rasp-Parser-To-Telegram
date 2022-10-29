@@ -430,6 +430,7 @@ async def cmd_start(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Test\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id in allowed_ids:
+        await bot.reply_to(message, "Джин выпущен из бутылки")
         create_task(fast_checker())
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
