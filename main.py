@@ -386,7 +386,7 @@ def subscribe(message):
                     else:
                         create_task(bot.reply_to(
                             message, "Успешно получилось отписаться от обновлений расписания"))
-                        create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
+                        create_task(bot.send_animation(message.chat.id, r'https://tenor.com/view/see-you-space-cowboy-gif-8754094'))
                 else:
                     ids.append(chat_id)
                     create_task(bot.reply_to(
