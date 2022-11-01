@@ -271,7 +271,37 @@ def checker():
 
 
 async def dispatch(chat_id, rasp):
-    await bot.send_message(chat_id, rasp)
+    try:
+        await bot.send_message(chat_id, rasp)
+    except Exception as e:
+        create_task(dump_logs(f"I failed to send a message to a user with id {chat_id} because {e}"))
+        await delete_from_dispatch(chat_id)
+
+
+#region Temporary code borrowing for a quick fix
+async def read_json(name):
+    if not os.path.exists(name):
+        with open(name, "x", encoding="utf-8"):
+            pass
+        return None
+    with open(name, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+async def write_data(name, data):
+    if not os.path.exists(name):
+        with open(name, "x", encoding="utf-8"):
+            pass
+    with open(name, "w", encoding="utf-8") as f:
+        create_task(f.write(data))
+
+async def delete_from_dispatch(id_to_delete):
+    ids = await read_json("config.json")
+    id_to_delete = str(id_to_delete)
+    if id_to_delete in ids["id"]:
+        ids[id_to_delete].remove(id_to_delete)
+    await write_data("config.json", json.dumps(ids, ensure_ascii=False))
+    create_task(dump_logs(f"Deleted {id_to_delete}"))
+#endregion
 
 
 async def wait(time):
