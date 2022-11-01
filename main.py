@@ -383,14 +383,14 @@ def subscribe(message):
                             message, "Не получилось отписаться от обновлений расписания"))
                     else:
                         create_task(dump_logs(
-                            f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] unsubscribed from everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
+                            f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] to unsubscribe from everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                         create_task(bot.reply_to(
                             message, "Успешно получилось отписаться от обновлений расписания"))
                         create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
                 else:
                     ids.append(chat_id)
                     create_task(dump_logs(
-                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
+                        f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] to subscribe to the everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновления расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
@@ -407,7 +407,7 @@ def subscribe(message):
                     configs[0]["id"] = json1
                     config.write(configs)
                     create_task(dump_logs(
-                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
+                        f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribe to the everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
 
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
@@ -415,7 +415,7 @@ def subscribe(message):
                 except:
                     config.write(json1)
                     create_task(dump_logs(
-                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
+                        f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribe to the everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
