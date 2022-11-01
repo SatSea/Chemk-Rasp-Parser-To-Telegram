@@ -282,7 +282,7 @@ async def wait(time):
 @bot.message_handler(commands=["FAQ", "faq"])
 async def FAQ(message: types.Message):
     asyncio.create_task(dump_logs(
-        f"Issued \"FAQ\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, """FAQ: 
 1\)Q: Почему бот такой кривой?
   A: Потому что, бюджета не хватило даже на банку пива и разрабатывало все это долбоеб\(ка\) на разработке
@@ -301,8 +301,8 @@ async def FAQ(message: types.Message):
 г\) Произошел форс\-мажор \(Поймите и простите\)
 ~д\) Бот ушел опять в бесконечную петлю~ 
 7\)Q: GDPR? \(aka Политика конфиденциальности\)
-  A: Да, мы собираем некоторую информацию о пользователях \(Ник, время, исполненная команда, статус выполнения команды\)
-  *Но данные удаляются по первому требованию пользователя или по истечению 30 дней*\.
+  A: Да, мы собираем некоторую информацию о пользователях \(Ник, имя/фамилия, время, исполненная команда, статус выполнения команды\)
+  *Данные удаляются по первому требованию пользователя или по истечению 90 дней*\.
 8\) Ебни анекдот
   A: Был такой легендарный мужик, который в 20\-е годы написал письмо в ЧЭМК\. Написал он примерно следующее: "Я уже 3 года считаю таблицы с расписанием у вас на сайте \- их то 2, то 3, то 4, а иногда и 1\. Вы там сумасшедшие что ли все?\"
 9\)Q: Кто принимал участие в создании бота?
@@ -329,7 +329,7 @@ async def cat_pic(chat_id):
 @bot.message_handler(commands=["Cat", "cat"])
 async def cat(message: types.Message):
     asyncio.create_task(dump_logs(
-        f"Issued \"Cat\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Cat\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(cat_pic(message.chat.id))
 
 
@@ -337,7 +337,7 @@ async def cat(message: types.Message):
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
-        f"Issued \"About\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
     create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
@@ -352,7 +352,7 @@ async def start(message: types.Message):
     buttons = ["/FAQ", "/Today", "/Tomorrow", "/Subscribe"]
     keyboard.add(*buttons)
     asyncio.create_task(dump_logs(
-        f"Issued \"start\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"start\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо организацией с аббревиатурой ЧЭМК.
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
 Если вы знаете что можно поправить, то пишите.
@@ -362,8 +362,6 @@ async def start(message: types.Message):
 
 @bot.message_handler(commands=["Subscribe", "subscribe"])
 async def cmd_start(message: types.Message):
-    asyncio.create_task(dump_logs(
-        f"Issued \"Subscribe\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
     subscribe(message)
 
 
@@ -384,11 +382,15 @@ def subscribe(message):
                         create_task(bot.reply_to(
                             message, "Не получилось отписаться от обновлений расписания"))
                     else:
+                        create_task(dump_logs(
+                            f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] unsubscribed from everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                         create_task(bot.reply_to(
                             message, "Успешно получилось отписаться от обновлений расписания"))
                         create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
                 else:
                     ids.append(chat_id)
+                    create_task(dump_logs(
+                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновления расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
@@ -404,11 +406,16 @@ def subscribe(message):
                     ids = configs[0]["id"]
                     configs[0]["id"] = json1
                     config.write(configs)
+                    create_task(dump_logs(
+                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
+
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 except:
                     config.write(json1)
+                    create_task(dump_logs(
+                        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribed to the daily mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
@@ -428,7 +435,7 @@ async def fast_checker():
 @bot.message_handler(commands=["Test", "test"])
 async def cmd_start(message: types.Message):
     create_task(dump_logs(
-        f"Issued \"Test\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Test\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id in allowed_ids:
         await bot.reply_to(message, "Джин выпущен из бутылки")
         create_task(fast_checker())
@@ -442,7 +449,7 @@ async def cmd_start(message: types.Message):
 async def today(message: types.Message):
     rasp = today_rasp()
     asyncio.create_task(dump_logs(
-        f"Issued \"Today\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
 
 
@@ -450,7 +457,7 @@ async def today(message: types.Message):
 async def tommorrow(message: types.Message):
     rasp = tomorrow_rasp()
     asyncio.create_task(dump_logs(
-        f"Issued \"Tomorrow\" from {message.from_user.username} in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
 
 
