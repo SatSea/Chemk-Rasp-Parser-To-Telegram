@@ -124,7 +124,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
                 else:
                     para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
+                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}")
             elif group == (name_of_group + " 1 п/г") or (name_of_group + " 2 п/г"):
                 has_group = True
                 paras = tables[1][2][index]
@@ -143,7 +143,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
                 else:
                     para.append(
-                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}\n")
+                        f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}")
     else:
         for index in range(len(tables[0])):
             group = tables[0][0][index]
@@ -165,7 +165,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                         f"Номер пары: {tables[0][1][index]}  Пара: отменена")
                 else:
                     para.append(
-                        f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}\n")
+                        f"Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  Кабинет: {tables[0][3][index]}")
             elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
                 has_group = True
                 paras = tables[0][2][index]
@@ -493,6 +493,8 @@ async def tommorrow(message: types.Message):
 @bot.message_handler(func=lambda message: True)
 async def unknown_command(message):
     await bot.reply_to(message, "Я не нашел такую команду...")
+    asyncio.create_task(dump_logs(
+        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote at in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
 
 
