@@ -6,10 +6,13 @@ from cachetools import cached, TTLCache
 
 import pandas as pd
 import requests
+from pytils.dt import distance_of_time_in_words
+from subprocess import check_output
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
+
 
 # region disable some rules in pylint
 # pylint: disable=anomalous-backslash-in-string, line-too-long, bare-except, missing-function-docstring, unspecified-encoding, broad-except
@@ -20,13 +23,14 @@ load_dotenv("Env/Tokens.env")
 token = os.getenv('TOKEN')
 groups = os.getenv('GROUP')
 name_of_group = os.getenv('NAME_OF_GROUP')
-allowed_ids = list(map(int,os.getenv('ALLOWED_IDS').split(',')))
+allowed_ids = list(map(int, os.getenv('ALLOWED_IDS').split(',')))
 hour_when_start_checking = int(os.getenv('START_HOUR'))
 bot = AsyncTeleBot(token)
 TODAY = TOMORROW = None
 weekday = ["Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"]
 month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня",
          "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"]
+start_time = datetime.datetime.now()
 # endregion
 
 
@@ -274,11 +278,12 @@ async def dispatch(chat_id, rasp):
     try:
         await bot.send_message(chat_id, rasp)
     except Exception as e:
-        create_task(dump_logs(f"I failed to send a message to a user with id {chat_id} because {e}\n"))
+        create_task(dump_logs(
+            f"I failed to send a message to a user with id {chat_id} because {e}\n"))
         await delete_from_dispatch(chat_id)
 
 
-#region Temporary code borrowing for a quick fix
+# region Temporary code borrowing for a quick fix
 async def read_json(name):
     if not os.path.exists(name):
         with open(name, "x", encoding="utf-8"):
@@ -287,6 +292,7 @@ async def read_json(name):
     with open(name, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 async def write_data(name, data):
     if not os.path.exists(name):
         with open(name, "x", encoding="utf-8"):
@@ -294,13 +300,14 @@ async def write_data(name, data):
     with open(name, "w", encoding="utf-8") as f:
         f.write(data)
 
+
 async def delete_from_dispatch(id_to_delete):
     ids = await read_json("config.json")
     if id_to_delete in ids[0]["id"]:
         ids[0]["id"].remove(id_to_delete)
     create_task(write_data("config.json", json.dumps(ids, ensure_ascii=False)))
     create_task(dump_logs(f"Deleted {id_to_delete}\n"))
-#endregion
+# endregion
 
 
 async def wait(time):
@@ -345,16 +352,33 @@ async def FAQ(message: types.Message):
 13\)Q: Может быть хватит добавлять смешнявки/кринж?
   A: Nein 
 14\)Q: Ну че, когда обновы?
-  A: Когда-нибудь
+  A: Когда\-нибудь
+15\)Q: Опять ты бота не перезапускаешь с обновами?
+  A: Есть такое, чтобы узнать об этом используй /status
   """, parse_mode='MarkdownV2'))
 
 
 async def cat_pic(chat_id):
     cat = json.loads(requests.get("https://meow.senither.com/v1/random").text)
     if cat['data']['type'] == 'mp4':
-        create_task(bot.send_animation(chat_id,cat['data']['url']))
+        create_task(bot.send_animation(chat_id, cat['data']['url']))
     else:
-        create_task(bot.send_photo(chat_id,cat['data']['url']))
+        create_task(bot.send_photo(chat_id, cat['data']['url']))
+
+
+@bot.message_handler(commands=["Status", "status"])
+async def tommorrow(message: types.Message):
+    asyncio.create_task(dump_logs(
+        f"Issued \"Status\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    commit = check_output(['git', 'rev-parse', '--short',
+                          'HEAD']).decode('ascii').strip()
+    await bot.reply_to(message, f"""Бот запущен {distance_of_time_in_words(start_time, accuracy=3)}
+и работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit})
+Кеш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
+на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
+""", parse_mode='MarkdownV2')
+    create_task(bot.send_animation(message.chat.id,
+                'https://cdn.discordapp.com/attachments/878333995908222989/1048634370031882310/homer-simpson.gif'))
 
 
 @bot.message_handler(commands=["Cat", "cat"])
@@ -364,13 +388,14 @@ async def cat(message: types.Message):
     create_task(cat_pic(message.chat.id))
 
 
-
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]\nКосвенная помощь в разработке: Ania [Донаты на печеньки и пиво, и моральная поддержка!]"))
-    create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
+    create_task(bot.reply_to(
+        message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]\nКосвенная помощь в разработке: Ania [Донаты на печеньки и пиво, и моральная поддержка!]"))
+    create_task(bot.send_animation(message.chat.id,
+                'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
 
 def create_task(task):
@@ -417,14 +442,16 @@ def subscribe(message):
                             f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] to unsubscribe from everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                         create_task(bot.reply_to(
                             message, "Успешно получилось отписаться от обновлений расписания"))
-                        create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
+                        create_task(bot.send_animation(
+                            message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
                 else:
                     ids.append(chat_id)
                     create_task(dump_logs(
                         f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] to subscribe to the everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновления расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+                    create_task(bot.send_animation(
+                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 json1 = json.dumps([{"id": ids}])
                 configs[0]["id"] = json1
                 config.write(json1)
@@ -442,15 +469,16 @@ def subscribe(message):
 
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+                    create_task(bot.send_animation(
+                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
                 except:
                     config.write(json1)
                     create_task(dump_logs(
                         f"Issued \"Subscribe\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] subscribe to the everyday mailing in {datetime.datetime.fromtimestamp(message.date)}\n"))
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
-                    create_task(bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
-
+                    create_task(bot.send_animation(
+                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
 
 
 async def fast_checker():
@@ -472,8 +500,8 @@ async def cmd_start(message: types.Message):
         create_task(fast_checker())
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
-
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
 
 
 @bot.message_handler(commands=["Today", "today"])
