@@ -344,6 +344,8 @@ async def FAQ(message: types.Message):
   A: Написать о том, что вы бы хотели поменять/исправить \(Нам тяжеловать за всем уследить\)
 13\)Q: Может быть хватит добавлять смешнявки/кринж?
   A: Nein 
+14\)Q: Ну че, когда обновы?
+  A: Когда-нибудь
   """, parse_mode='MarkdownV2'))
 
 
@@ -367,7 +369,7 @@ async def cat(message: types.Message):
 async def tommorrow(message: types.Message):
     asyncio.create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея] и SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста]"))
+    create_task(bot.reply_to(message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]\nКосвенная помощь в разработке: Ania [Донаты на печеньки и пиво, и моральная поддержка!]"))
     create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
 
