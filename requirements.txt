@@ -1,6 +1,7 @@
 beautifulsoup4==4.11.1
 cachetools==5.2.0
 pandas==1.4.4
-pyTelegramBotAPI==4.7.0
+pyTelegramBotAPI==4.8.0
 python-dotenv==0.21.0
+pytils==0.4.1
 requests==2.28.1
