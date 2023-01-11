@@ -373,7 +373,7 @@ async def tommorrow(message: types.Message):
     commit = check_output(['git', 'rev-parse', '--short',
                           'HEAD']).decode('ascii').strip()
     await bot.reply_to(message, f"""Бот запущен {distance_of_time_in_words(start_time, accuracy=3)}
-и работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit})
+Работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit})
 Кеш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
 на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
 """, parse_mode='MarkdownV2')
