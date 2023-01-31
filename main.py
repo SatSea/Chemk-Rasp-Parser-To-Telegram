@@ -389,7 +389,7 @@ async def tommorrow(message: types.Message):
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(
         message, """Прямое участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]
-        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво и моральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!]""")
+        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!]""")
     create_task(bot.send_animation(message.chat.id,
                 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
