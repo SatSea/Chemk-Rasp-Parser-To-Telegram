@@ -10,7 +10,7 @@ from pytils.dt import distance_of_time_in_words
 from subprocess import check_output
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from telebot import types
+from telebot import types, asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
 
 
@@ -31,6 +31,7 @@ weekday = ["Понедельник", "Вторник", "Среду", "Четве
 month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня",
          "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"]
 start_time = datetime.datetime.now()
+add_message = ""
 # endregion
 
 
@@ -235,12 +236,12 @@ async def waiter_checker():
             ids = json.loads(config.read())
             print(ids[0]["id"])
             for people_id in ids[0]["id"]:
-                create_task(dispatch(people_id, resp))
+                create_task(dispatcher(people_id, resp))
 
 
 async def dump_logs(logging_info):
     print("Writted to logs")
-    with open("plain_logging.log", "a") as log:
+    with open("plain_logging.log", "a", encoding="utf-8") as log:
         log.write(logging_info)
 
 
@@ -271,10 +272,15 @@ def checker():
         itogo = f"Ежедневная рассылка расписания на {weekday[tommorrow.weekday()]} {tommorrow.day} {month[tommorrow.month-1]}:\n\n" + itogo
     else:
         itogo = f"Ежедневная рассылка расписания на {weekday[day_plus_two.weekday()]} {day_plus_two.day} {month[day_plus_two.month-1]}:\n\n" + itogo
+    return add_daily_message_to_itogo(itogo)
+
+def add_daily_message_to_itogo(itogo):
+    global add_message
+    itogo = itogo + "\n\n" + add_message if add_message != '' else itogo
+    add_message = ''
     return itogo
 
-
-async def dispatch(chat_id, rasp):
+async def dispatcher(chat_id, rasp):
     try:
         await bot.send_message(chat_id, rasp)
     except Exception as e:
@@ -317,44 +323,33 @@ async def wait(time):
 
 @bot.message_handler(commands=["FAQ", "faq"])
 async def FAQ(message: types.Message):
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, """FAQ: 
 1\)Q: Почему бот такой кривой?
-  A: Потому что, бюджета не хватило даже на банку пива и разрабатывало все это долбоеб\(ка\) на разработке
+  A: Потому что, да
 2\)Q: Поддержка других групп?
-  A: Когда\-нибудь поддержка других групп появится \(работы в этом направлении уже ведутся, stay tuned\(вся свежая информация в нашем дискорд сервере \{discord\_url\}\)\)\.
+  A: Когда\-нибудь поддержка других групп появится \(работы в этом направлении уже ведутся, stay tuned \(вся свежая информация в нашем дискорд сервере \{https://discord\.gg/YVrasmddPv\}\)\)\.
 3\)Q: Поддержка других корпусов?
   A: Скорее нет, чем да, поддержка других корпусов потребует большого количества работы и скорее всего не будет реализована\.
 4\)Q: Сколько будет работать этот бот?
   A: Да\.
-5\)Q: Код будет выложен?
+5\)Q: Где код?
   A: https://github\.com/SatSea/Chemk\-Rasp\-Parser\-To\-Telegram
-6\)Q: Почему бот иногда так долго отвечает?
-  A: а\) Все таки одного ядро уже не хватает :\)
-б\) Период рассылки сообщений
-в\) Опять сайт ЧЭМК ограничил скорость для меня, опять\.\.\.\.
-г\) Произошел форс\-мажор \(Поймите и простите\)
-~д\) Бот ушел опять в бесконечную петлю~ 
-7\)Q: GDPR? \(aka Политика конфиденциальности\)
-  A: Да, мы собираем некоторую информацию о пользователях \(Ник, имя/фамилия, время, исполненная команда, статус выполнения команды\)
-  *Данные удаляются по первому требованию пользователя*\.
-8\) Ебни анекдот
-  A: Был такой легендарный мужик, который в 20\-е годы написал письмо в ЧЭМК\. Написал он примерно следующее: "Я уже 3 года считаю таблицы с расписанием у вас на сайте \- их то 2, то 3, то 4, а иногда и 1\. Вы там сумасшедшие что ли все?\"
-9\)Q: Кто принимал участие в создании бота?
+6\)Q: Кто принимал участие в создании бота?
   A: /About
-10\)Q: Сколько часов заняла разработка этого бота?
-  A: Порядка 25\-30 часов написания кода, 10 человеко\-часов тестирования
-11\)Q: Запости кота
+7\)Q: Запости кота
   A: /cat
-12\)Q: Как можно помочь проекту?
+8\)Q: Как можно помочь нам?
   A: Написать о том, что вы бы хотели поменять/исправить \(Нам тяжеловать за всем уследить\)
-13\)Q: Может быть хватит добавлять смешнявки/кринж?
-  A: Nein 
-14\)Q: Ну че, когда обновы?
+9\)Q: Может быть хватит добавлять смешнявки/кринж?
+  A: Nein\.
+10\)Q: Ну че, когда обновы?
   A: Когда\-нибудь
-15\)Q: Опять ты бота не перезапускаешь с обновами?
-  A: Есть такое, чтобы узнать об этом используй /status
+11\)Q: Опять бот не перезапущен после обнов?
+  A: Возможно опять с этим проебались, чтобы узнать хэш коммита используй /status и если он не совпадает с тем, что на гитхабе, то мы прооебались, извините\. Мы 🐌\.
+12\)Q: Что за ебан писал этот код?
+  A: Мы ебаны и мы этмим гордимся\.
   """, parse_mode='MarkdownV2'))
 
 
@@ -368,7 +363,7 @@ async def cat_pic(chat_id):
 
 @bot.message_handler(commands=["Status", "status"])
 async def tommorrow(message: types.Message):
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"Status\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     commit = check_output(['git', 'rev-parse', '--short',
                           'HEAD']).decode('ascii').strip()
@@ -383,17 +378,18 @@ async def tommorrow(message: types.Message):
 
 @bot.message_handler(commands=["Cat", "cat"])
 async def cat(message: types.Message):
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"Cat\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(cat_pic(message.chat.id))
 
 
 @bot.message_handler(commands=["About", "about"])
 async def tommorrow(message: types.Message):
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(
-        message, "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]\nКосвенная помощь в разработке: Ania [Донаты на печеньки и пиво, и моральная поддержка!]"))
+    await bot.reply_to(
+        message, """Прямое участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]
+        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво и моральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!]""")
     create_task(bot.send_animation(message.chat.id,
                 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
@@ -405,9 +401,9 @@ def create_task(task):
 @bot.message_handler(commands=["start"])
 async def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["/FAQ", "/Today", "/Tomorrow", "/Subscribe"]
+    buttons = ["/FAQ", "/Today", "/Tomorrow", "/Subscribe", "/Schedule"]
     keyboard.add(*buttons)
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"start\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, """Disclaimer: Данный бот не выдает истины последней инстанции, вся информация выданная ботом предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является официальным проектом связанным с какой-либо организацией с аббревиатурой ЧЭМК.
 Бот все еще находится стадии очень ранней разработки. Поэтому могут быть случайные сообщения и некоторые неточности.
@@ -488,13 +484,13 @@ async def fast_checker():
         ids = json.loads(config.read())
         print(ids[0]["id"])
         for people_id in ids[0]["id"]:
-            create_task(dispatch(people_id, resp))
+            create_task(dispatcher(people_id, resp))
 
 
-@bot.message_handler(commands=["Test", "test"])
-async def cmd_start(message: types.Message):
+@bot.message_handler(commands=["Dispatch", "dispatch"])
+async def dispatch(message: types.Message):
     create_task(dump_logs(
-        f"Issued \"Test\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Issued \"Dispatch\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id in allowed_ids:
         await bot.reply_to(message, "Джин выпущен из бутылки")
         create_task(fast_checker())
@@ -504,10 +500,46 @@ async def cmd_start(message: types.Message):
             message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
 
 
+@bot.message_handler(commands=["Add_daily_message", "add_daily_message"])
+async def daily_message(message: types.Message):
+    create_task(dump_logs(
+        f"Issued \"Dispatch\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    if message.chat.id not in allowed_ids:
+        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        create_task(bot.send_animation(message.chat.id, 
+                                       'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        return
+    create_task(bot.reply_to(message, "Яви свое послание народу"))
+    create_task(bot.set_state(message.from_user.id, "add_message", message.chat.id))
+
+@bot.message_handler(state="add_message")
+async def add_daily_message(message):
+    global add_message 
+    add_message = f"{message.text}\nСообщение от: @{message.from_user.username}" 
+    create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message))
+    create_task(dump_logs(
+        f"Added to Daily_message \"{add_message}\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    create_task(bot.delete_state(message.from_user.id, message.chat.id))
+    
+@bot.message_handler(commands=["Daily_message", "daily_message"])
+async def daily_message(message: types.Message):
+    create_task(dump_logs(
+        f"Issued \"Daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
+    create_task(bot.reply_to(message, "Я дополню ежедневную рассылку этим:\n" + add_message))
+
+@bot.message_handler(commands=["Clear_daily_message", "clear_daily_message"])
+async def clear_daily_message(message: types.Message):
+    create_task(dump_logs(
+        f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего удалять"))
+    add_message == ''
+    create_task(bot.reply_to(message, "Успешно удалил дополнительный текст к ежедневной рассылке"))
+
 @bot.message_handler(commands=["Today", "today"])
 async def today(message: types.Message):
     rasp = today_rasp()
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
 
@@ -515,15 +547,22 @@ async def today(message: types.Message):
 @bot.message_handler(commands=["Tomorrow", "tomorrow"])
 async def tommorrow(message: types.Message):
     rasp = tomorrow_rasp()
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp)
+
+@bot.message_handler(commands=["Schedule", "schedule"])
+async def Schedule(message: types.Message):
+    create_task(dump_logs(
+        f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    if (datetime.datetime.today().isoweekday() == 2): return create_task(bot.reply_to(message, "Расписание звонков на вторник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \nКлассный час 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"))
+    create_task(bot.reply_to(message, "Расписание звонков:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"))
 
 
 @bot.message_handler(func=lambda message: True)
 async def unknown_command(message):
     await bot.reply_to(message, "Я не нашел такую команду...")
-    asyncio.create_task(dump_logs(
+    create_task(dump_logs(
         f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote at in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
 
@@ -551,6 +590,7 @@ async def inf_pooling():
         except Exception as e:
             await dump_logs(f"\nException created: {e}")
 
+bot.add_custom_filter(asyncio_filters.StateFilter(bot))
 
 if __name__ == "__main__":
     asyncio.run(init())
