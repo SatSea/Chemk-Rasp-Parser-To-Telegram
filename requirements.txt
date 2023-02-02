@@ -1,8 +1,0 @@
-beautifulsoup4
-cachetools
-pandas
-lxml
-pyTelegramBotAPI
-python-dotenv
-pytils
-requests

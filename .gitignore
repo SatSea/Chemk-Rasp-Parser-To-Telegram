@@ -1,7 +1,9 @@
-/Testing Stuff/
 *.log
 config.json
 *.env
-Tokens.env
-Env/Tokens.env
-.vscode/*
+*.ipynb
+ids.json
+
+logs/
+.vscode/
+__pycache__/
