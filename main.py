@@ -555,10 +555,15 @@ async def tommorrow(message: types.Message):
 async def Schedule(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    if (datetime.datetime.today().isoweekday() == 2): return create_task(bot.reply_to(message, "Расписание звонков на вторник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \nКлассный час 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"))
-    create_task(bot.reply_to(message, "Расписание звонков:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"))
-
-
+    match(datetime.datetime.today().isoweekday()):
+        case 1:
+            schedule = "Расписание звонков на понедельник:\n\nИнформационная 5-минутка: 8.10 - 8.15\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
+        case 2:
+            schedule = "Расписание звонков на вторник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \nКлассный час 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"
+        case _:
+            schedule = "Расписание звонков:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
+    create_task(bot.reply_to(message, schedule))
+    
 @bot.message_handler(func=lambda message: True)
 async def unknown_command(message):
     await bot.reply_to(message, "Я не нашел такую команду...")
