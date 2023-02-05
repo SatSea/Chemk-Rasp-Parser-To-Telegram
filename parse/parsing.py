@@ -1,39 +1,37 @@
+import json
 from cachetools import cached, TTLCache
+from parse.requester import get_table_rasp
 
-async def group_today_rasp(name_group):
-    return await today_rasp()[name_group]
 
-async def group_tomorrow_rasp(name_group):
-    return await tomorrow_rasp()[name_group]
+@cached(cache=TTLCache(maxsize=1024, ttl=1800))
+async def group_rasp(day: str,name_group: str) -> str:
+    return await get_rasp_group(day)[name_group]
     
-@cached(cache=TTLCache(ttl=3600))
-async def today_rasp():
-    return await rasp("today")
+@cached(cache=TTLCache(maxsize=1024, ttl=1800))
+async def get_rasp_group(day: str) -> list[str]: 
+    '''
+    To avoid having to тыкать parser every time, 
+    perhaps there was an easier way than to create another function 
+    and cache it, but it didn't come to my head straight off
+    '''
+    return await rasp(day)                       
 
-@cached(cache=TTLCache(ttl=3600))
-async def tomorrow_rasp():
-    return await rasp("tomorrow") 
-
-async def rasp(day: str) -> str:
-    return "Затычка"
-
-
-async def new_parsing_eng(table: list, day: str = "Tommorow") -> list[str]:
+async def rasp(day: str) -> list[str]:
     rasp = {}
-    rasp["day"] = table[0][0][33:] # 33 символа - "Распоряжение по учебной части на "
+    table = get_table_rasp(day)
+    rasp["day"] = table[0][0][33:] # 33 - "Распоряжение по учебной части на "
     for line in table[3:]:
         name_group, lession_num, lession_name, lession_kab = line # ебнет? не должно
-        if(lession_num != lession_num):  # проверка на пустую клетку номера пары (nan != nan)
-            current_group = None         # если номер пары пустой, то считаем что нет группы и пар
-            continue                     # так что пропускаем
-        if name_group == name_group: current_group = name_group # если есть название группы
-                                                                # то сохраняем на случай кривой разметки расписания
-        if current_group[:6] not in rasp: rasp[current_group[:6]] = [] # первые 6 символов название группы без подргуппы
+        if(lession_num != lession_num):  # (nan != nan)
+            current_group = None
+            continue
+        if name_group == name_group: current_group = name_group
+        if current_group[:6] not in rasp: rasp[current_group[:6]] = [] 
         match line[2]:                                          
             case "Нет":
                 rasp[current_group].append(f"Пара {lession_num} отменена")
             case "По расписанию":
-                rasp[current_group].append(get_default_rasp(current_group, lession_num, day, lession_kab))
+                rasp[current_group].append(await get_default_rasp(current_group, lession_num, day, lession_kab))
             case "День самостоятельной работы":
                 rasp[current_group].append(f"День самостоятельной работы")
             case _:
@@ -43,5 +41,10 @@ async def new_parsing_eng(table: list, day: str = "Tommorow") -> list[str]:
                     rasp[current_group].append(f"Номер пары: {lession_num}  Пара: {lession_name}  Кабинет: {lession_kab}")
     return rasp
 
-def get_default_rasp(name_group:str, lession_num:str|int, day: str, non_default_kab: str = None):
+@cached(cache = {})
+async def load_json_plain_rasp():
+    async with open("plain_rasp.json", "r", encoding="utf-8") as rasp:
+        return json.load(rasp)
+
+async def get_default_rasp(name_group:str, lession_num:str|int, day: str, non_default_kab: str = None):
     return "Дефолтное расписание"

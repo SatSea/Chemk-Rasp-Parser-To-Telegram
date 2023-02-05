@@ -1,15 +1,9 @@
 import asyncio
-import json
-from aiogram import types
-from aiogram.utils import executor
-from aiogram.utils.markdown import escape_md
-import requests
 from datetime import datetime
 
 from log import logger
 from misc import create_task
-import Env
-from init_bot import init_bot, dp
+from init_bot import bot, dp
 from handlers import regular
 
 
@@ -20,7 +14,7 @@ start_time = datetime.now()
 
 async def bot_start():
     try:
-        await dp.start_polling(init_bot)
+        await dp.start_polling(bot)
     except:
         logger.error("Bot has failed to start")
 

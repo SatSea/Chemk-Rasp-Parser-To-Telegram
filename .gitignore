@@ -1,8 +1,7 @@
 *.log
-config.json
+subscription.json
 *.env
 *.ipynb
-ids.json
 
 logs/
 .vscode/
