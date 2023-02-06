@@ -350,6 +350,8 @@ async def FAQ(message: types.Message):
   A: Возможно опять с этим проебались, чтобы узнать хэш коммита используй /status и если он не совпадает с тем, что на гитхабе, то мы прооебались, извините\. Мы 🐌\.
 12\)Q: Что за ебан писал этот код?
   A: Мы ебаны и мы этмим гордимся\.
+13\)Q: А че всмысле, почему в 2 часа ночи бот не доступен?!??!?
+  A: Kys\.
   """, parse_mode='MarkdownV2'))
 
 
@@ -369,7 +371,7 @@ async def tommorrow(message: types.Message):
                           'HEAD']).decode('ascii').strip()
     await bot.reply_to(message, f"""Бот запущен {distance_of_time_in_words(start_time, accuracy=3)}
 Работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit})
-Кеш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
+Кэш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
 на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
 """, parse_mode='MarkdownV2')
     create_task(bot.send_animation(message.chat.id,
@@ -389,7 +391,7 @@ async def tommorrow(message: types.Message):
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(
         message, """Прямое участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]
-        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!]""")
+        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво, и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!!!]""")
     create_task(bot.send_animation(message.chat.id,
                 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
 
@@ -514,6 +516,10 @@ async def daily_message(message: types.Message):
 
 @bot.message_handler(state="add_message")
 async def add_daily_message(message):
+    if message.chat.id not in allowed_ids:
+        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        return
     global add_message 
     add_message = f"{message.text}\nСообщение от: @{message.from_user.username}" 
     create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message))
@@ -523,6 +529,10 @@ async def add_daily_message(message):
     
 @bot.message_handler(commands=["Daily_message", "daily_message"])
 async def daily_message(message: types.Message):
+    if message.chat.id not in allowed_ids:
+        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        return
     create_task(dump_logs(
         f"Issued \"Daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
@@ -530,6 +540,10 @@ async def daily_message(message: types.Message):
 
 @bot.message_handler(commands=["Clear_daily_message", "clear_daily_message"])
 async def clear_daily_message(message: types.Message):
+    if message.chat.id not in allowed_ids:
+        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        return
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего удалять"))
