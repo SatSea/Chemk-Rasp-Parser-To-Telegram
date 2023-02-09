@@ -538,6 +538,23 @@ async def daily_message(message: types.Message):
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
     create_task(bot.reply_to(message, "Я дополню ежедневную рассылку этим:\n" + add_message))
 
+@bot.message_handler(commands=["Send_message", "Send_message"])
+async def Send_message(message: types.Message):
+    if message.chat.id not in allowed_ids:
+        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        return
+    create_task(dump_logs(
+        f"Issued \"Send_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+    if (add_message == ''): return create_task(bot.reply_to(message, "В рассылке ничего нет"))
+    with open("config.json", "r") as config:
+        ids = json.loads(config.read())
+        print(ids[0]["id"])
+        for people_id in ids[0]["id"]:
+            create_task(dispatcher(people_id, add_message))
+
+
+
 @bot.message_handler(commands=["Clear_daily_message", "clear_daily_message"])
 async def clear_daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
