@@ -130,7 +130,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 else:
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: {tables[1][2][index]}  Кабинет: {tables[1][3][index]}")
-            elif group == (name_of_group + " 1 п/г") or (name_of_group + " 2 п/г"):
+            elif group == (name_of_group + " 1 п/г") or group == (name_of_group + " 2 п/г"):
                 has_group = True
                 paras = tables[1][2][index]
                 if (paras == "По расписанию"):
