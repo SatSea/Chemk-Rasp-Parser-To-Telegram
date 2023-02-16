@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from subscription import get_subs
 from log import logger
 
@@ -8,8 +9,8 @@ async def get_inline_sub_kb(user_id: int):
     subs = await get_subs(str(user_id))
     inline_keyboard_buttons = []
     for group in groups:
-        inline_keyboard_buttons.append(InlineKeyboardButton(f"{'✅ ' if group in subs else '❌ '}{group}",callback_data=f"subscribe_{group}"))
-    keyboard = InlineKeyboardMarkup(row_width=4)
+        inline_keyboard_buttons.append(InlineKeyboardButton(text = f"{'✅ ' if group in subs else '❌ '}{group}",callback_data=f"subscribe_{group}"))
+    keyboard = InlineKeyboardBuilder()
     keyboard.add(*inline_keyboard_buttons)
-    lo
-    return keyboard
+    keyboard.adjust(3)
+    return keyboard.as_markup(resize_keyboard=True)

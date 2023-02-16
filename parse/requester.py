@@ -20,11 +20,7 @@ async def req_site(day: str) -> str:
         async with session.get(f"https://rsp.chemk.org/4korp/{day}.htm") as response:
             text = await response.text()
             
-async def check_rasp_on_site(day: str) -> bool:
-    '''
-    if true, there is a rasp on the site
-    if false, there is no rasp on the site
-    '''
+async def is_rasp_on_site(day: str = "Tomorrow") -> bool:
     raw_rasp = await req_site(day)
     soup = BeautifulSoup(raw_rasp, "html.parser")
     return not (soup.find("div", class_="Section1"))

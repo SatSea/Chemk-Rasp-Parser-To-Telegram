@@ -15,10 +15,8 @@ from parse import group_rasp
 async def start(message: types.Message):
     logger.info(
         f"Issued \"start\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
-    await message.reply("""Disclaimer: Бот не выдает истины последней инстанции, вся информация предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности. Не заменяет просмотр расписания на сайте, а также не является чьим-либо официальным проектом.
+    await message.reply("""Disclaimer: Вся информация предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности и не заменяет просмотр расписания на сайте.
 Проект все еще находится стадии очень ранней разработки, поэтому могут быть неточности и многие другие прелести неотлаженного кода.
-Если вы знаете что можно поправить, то пишите.
-Другие группы помимо Ир1-20 пока что не поддерживает...
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=await get_regular_kb())
 
 # @dp.message(commands=["FAQ", "faq"])
@@ -140,7 +138,7 @@ async def unknown_commnand(message: types.Message):
     await message.answer_animation('https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
     logger.warning(f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote")
 
-async def register_regular_handlers(dp : Dispatcher):
+async def register_regular_handlers(dp: Dispatcher):
     dp.message.register(about, Command(commands=["test"]))
     dp.message.register(cat, Command(commands=["Cat", "cat"]))
     dp.message.register(start, Command(commands=["start"]))
