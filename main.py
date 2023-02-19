@@ -327,12 +327,13 @@ async def FAQ(message: types.Message):
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.reply_to(message, """FAQ: 
 1\)Q: Ну так что там с обработкой данных?
-  A: Мы хотим сообщить вам, что наш Telegram\-бот собирает ограниченное количество информации о вас, например, твой ник, твой ID, chat ID и текст сообщений, исключительно для целей логгинга и подписки на нашу ежедневную рассылку\. Также мы не будем использовать информацию в каких\-либо таргетированных/персонализированных рекламных целях\. Будьте уверены, что мы очень серьезно относимся к конфиденциальности и безопасности ваших данных, и никогда не передадим вашу информацию третьим лицам\.
+  A: Мы хотим сообщить вам, что наш Telegram\-бот собирает ограниченное количество информации о вас, например, твой ник, твой ID, chat ID и текст сообщений, исключительно для целей логгинга и подписки на нашу ежедневную рассылку\. 
+Мы не будем использовать информацию в каких\-либо таргетированных/персонализированных рекламных целях\. Будьте уверены, что мы очень серьезно относимся к конфиденциальности и безопасности ваших данных, и никогда не передадим вашу информацию третьим лицам\.
 Используя нашего бота, вы соглашаетесь на сбор и использование ваших данных в соответствии с нашей политикой конфиденциальности\. Если у вас возникнут вопросы или проблемы, пожалуйста, обращайтесь к нам\.
 2\)Q: Почему бот такой кривой?
   A: Потому что, да
 3\)Q: Поддержка других групп?
-  A: Когда\-нибудь поддержка других групп появится \(работы в этом направлении уже ведутся, stay tuned \(вся свежая информация в нашем дискорд сервере \{https://discord\.gg/YVrasmddPv\}\)\)\.
+  A: Поддержка других групп появится в боте v2\.0 \(работы в этом направлении уже ведутся, stay tuned \(вся свежая информация в нашем дискорд сервере https://discord\.gg/YVrasmddPv\)\)\.
 4\)Q: Поддержка других корпусов?
   A: Скорее нет, чем да, поддержка других корпусов потребует большого количества работы и скорее всего не будет реализована\.
 5\)Q: Сколько будет работать этот бот?
@@ -356,6 +357,9 @@ async def FAQ(message: types.Message):
 14\)Q: А че всмысле, почему в 2 часа ночи бот не доступен?\!??\!?
   A: Kys\.
   """, parse_mode='MarkdownV2'))
+    create_task(bot.send_animation(
+        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1076927137623310457/faq.gif'))
+
 
 
 async def cat_pic(chat_id):
@@ -378,7 +382,7 @@ async def tommorrow(message: types.Message):
 на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
 """, parse_mode='MarkdownV2')
     create_task(bot.send_animation(message.chat.id,
-                'https://cdn.discordapp.com/attachments/878333995908222989/1048634370031882310/homer-simpson.gif'))
+                'https://cdn.discordapp.com/attachments/878333995908222989/1076918042279301310/status-report-status-update.gif'))
 
 
 @bot.message_handler(commands=["Cat", "cat"])
@@ -394,9 +398,9 @@ async def tommorrow(message: types.Message):
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(
         message, """Прямое участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]
-        Косвенное участие в разработке: Ania [Донаты на печеньки и пиво, и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!!!]""")
+Косвенное участие в разработке: Ania [Донаты на печеньки и пиво, и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!!!]""")
     create_task(bot.send_animation(message.chat.id,
-                'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif'))
+                'https://cdn.discordapp.com/attachments/878333995908222989/1076928199977611356/kitty_1.gif'))
 
 
 def create_task(task):
@@ -503,7 +507,7 @@ async def dispatch(message: types.Message):
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
 
 
 @bot.message_handler(commands=["Add_daily_message", "add_daily_message"])
@@ -513,7 +517,7 @@ async def daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(message.chat.id, 
-                                       'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+                                       'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
         return
     create_task(bot.reply_to(message, "Яви свое послание народу"))
     create_task(bot.set_state(message.from_user.id, "add_message", message.chat.id))
@@ -563,7 +567,7 @@ async def Send_message(message: types.Message):
 async def clear_daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
         return
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
