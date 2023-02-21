@@ -133,7 +133,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
             elif group == (name_of_group + " 1 п/г") or group == (name_of_group + " 2 п/г"):
                 has_group = True
                 paras = tables[1][2][index]
-                if (paras == "По расписанию"):
+                if (paras.lower() == "по расписанию"):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
                         kab = tables[1][3][index]
@@ -143,7 +143,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                         else:
                             para.append(
                                 f"Для {group[6:]}Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[1][3][index]}")
-                elif (paras == "Нет"):
+                elif (paras.lower() == "нет"):
                     para.append(
                         f"Номер пары: {tables[1][1][index]}  Пара: отменена")
                 else:
@@ -155,7 +155,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
             if group == name_of_group:
                 has_group = True
                 paras = tables[0][2][index]
-                if (paras == "По расписанию"):
+                if (paras.lower() == "по расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
                         kab = tables[0][3][index]
@@ -165,7 +165,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                         else:
                             para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {tables[0][3][index]}")
-                elif (paras == "Нет"):
+                elif (paras.lower() == "нет"):
                     para.append(
                         f"Номер пары: {tables[0][1][index]}  Пара: отменена")
                 else:
