@@ -89,10 +89,14 @@ async def about(message: types.Message):
 # @dp.message(commands=["Today", "today"])
 async def today(message: types.Message):
     try:
-        rasp = await group_today_rasp()
-        await message.reply(rasp)
-        logger.info(
-            f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
+        if (is_have_default_group(message.from_user.id)):
+            rasp = await group_rasp("", get_default_group(message.from_user.id))
+            await message.reply(rasp)
+            logger.info(
+                f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
+        else:
+            await rasp_without_default_group(message, "today")
+        
     except Exception as e:
         logger.exception(
             f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] issued \"Today\", but I couldn't make and send a rasp")
@@ -102,10 +106,14 @@ async def today(message: types.Message):
 # @dp.message(commands=["Tomorrow", "tomorrow"])
 async def tommorrow(message: types.Message):
     try:
-        rasp = await group_tommorrow_rasp()
-        await message.reply(rasp)
-        logger.info(
-            f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
+        if (is_have_default_group(message.from_user.id)):
+            rasp = await group_rasp("", get_default_group(message.from_user.id))
+            await message.reply(rasp)
+            logger.info(
+                f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
+        else:
+            await rasp_without_default_group(message, "tomorrow")
+        
     except Exception as e:
         logger.exception(
             f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] issued \"Today\", but I couldn't make and send a rasp")
