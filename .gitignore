@@ -1,7 +1,8 @@
-/Testing Stuff/
 *.log
-config.json
+subscription.json
 *.env
-Tokens.env
-Env/Tokens.env
-.vscode/*
+*.ipynb
+
+logs/
+.vscode/
+__pycache__/

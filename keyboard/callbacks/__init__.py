@@ -1,0 +1,1 @@
+# from keyboard.callbacks import register_callbacks
