@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from init_bot import dp
 from datetime import datetime
 from keyboard.regular_kb import get_regular_kb
-from keyboard.inline_kb import get_inline_sub_kb
+from keyboard.inline_kb import get_inline_sub_kb, get_inline_message_type_kb
 from pytils.dt import distance_of_time_in_words
 from misc import cat_pic
 from main import start_time
@@ -139,6 +139,12 @@ async def subscribe(message: types.Message):
     logger.info(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
 
+# @dp.message(commands=["Messages_type", "messages_type"])
+async def subscribe(message: types.Message):
+    await message.reply("Выбери формат сообщений который ты хочешь:", reply_markup=await get_inline_message_type_kb(message.from_user.id))
+    logger.info(
+        f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
+
 
 # @dp.message()
 async def unknown_commnand(message: types.Message):
@@ -156,5 +162,6 @@ async def register_regular_handlers(dp: Dispatcher):
     dp.message.register(tommorrow, Command(commands=["Tomorrow", "tomorrow"]))
     dp.message.register(schedule, Command(commands=["Schedule", "schedule"]))
     dp.message.register(subscribe, Command(commands=["Subscribe", "subscribe"]))
+    dp.message.register(subscribe, Command(commands=["Messages_type", "messages_type"]))
     dp.message.register(unknown_commnand)
     
