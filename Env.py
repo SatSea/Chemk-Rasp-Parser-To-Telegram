@@ -11,6 +11,9 @@ try:
     name_of_group = getenv('NAME_OF_GROUP')
     allowed_ids = list(map(int, getenv('ALLOWED_IDS').split(',')))
     hour_when_start_checking = int(getenv('START_HOUR'))
+    mogno_host = getenv("MONGO_HOST")
+    mogno_port = int(getenv("MONGO_PORT"))
+    mogno_db_name = getenv("MONGO_DB_NAME")
     logging.info("Variables from env loaded successfully")
 except:
     logging.error("Failed to load data from env")

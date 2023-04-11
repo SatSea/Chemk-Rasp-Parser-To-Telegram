@@ -2,6 +2,7 @@ from asyncio import create_task, run
 from datetime import datetime
 
 from dispatcher.rasp_checker import start_waiting
+from db import database
 
 from log import logger
 from init_bot import bot, dp
