@@ -560,6 +560,11 @@ async def Send_message(message: types.Message):
         print(ids[0]["id"])
         for people_id in ids[0]["id"]:
             create_task(dispatcher(people_id, add_message))
+    global add_message
+    add_message = ''
+
+
+    
 
 
 
@@ -572,7 +577,8 @@ async def clear_daily_message(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего удалять"))
-    add_message == ''
+    global add_message
+    add_message = ''
     create_task(bot.reply_to(message, "Успешно удалил дополнительный текст к ежедневной рассылке"))
 
 @bot.message_handler(commands=["Today", "today"])
