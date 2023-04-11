@@ -548,6 +548,7 @@ async def daily_message(message: types.Message):
 
 @bot.message_handler(commands=["Send_message", "Send_message"])
 async def Send_message(message: types.Message):
+    global add_message
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
@@ -560,7 +561,6 @@ async def Send_message(message: types.Message):
         print(ids[0]["id"])
         for people_id in ids[0]["id"]:
             create_task(dispatcher(people_id, add_message))
-    global add_message
     add_message = ''
 
 
@@ -570,6 +570,7 @@ async def Send_message(message: types.Message):
 
 @bot.message_handler(commands=["Clear_daily_message", "clear_daily_message"])
 async def clear_daily_message(message: types.Message):
+    global add_message
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
@@ -577,7 +578,6 @@ async def clear_daily_message(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего удалять"))
-    global add_message
     add_message = ''
     create_task(bot.reply_to(message, "Успешно удалил дополнительный текст к ежедневной рассылке"))
 
