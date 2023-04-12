@@ -1,11 +1,17 @@
 import json
 from cachetools import cached, TTLCache
 from parse.requester import get_table_rasp
+from subscription import get_message_type 
 
-
+async def group_rasp(day: str,name_group: str, user_id: int) -> str:
+    if (wrapper_group_rasp.cache.currsize > 0):
+        return wrapper_group_rasp(day, name_group, user_id)
+    return await wrapper_group_rasp(day, name_group, user_id)
+    
 @cached(cache=TTLCache(maxsize=1024, ttl=1800))
-async def group_rasp(day: str,name_group: str) -> str:
-    return await get_rasp_group(day)[name_group]
+async def wrapper_group_rasp(day: str,name_group: str, user_id: int) -> str:
+    rasp_non_formated = (await get_rasp_group(day))[name_group]
+    return await format_message(user_id, rasp_non_formated)
     
 @cached(cache=TTLCache(maxsize=1024, ttl=1800))
 async def get_rasp_group(day: str) -> list[str]: 
@@ -18,7 +24,7 @@ async def get_rasp_group(day: str) -> list[str]:
 
 async def rasp(day: str) -> list[str]:
     rasp = {}
-    table = get_table_rasp(day)
+    table = await get_table_rasp(day)
     rasp["day"] = table[0][0][33:] # 33 - "Распоряжение по учебной части на "
     for line in table[3:]:
         name_group, lession_num, lession_name, lession_kab = line # ебнет? не должно
@@ -36,9 +42,10 @@ async def rasp(day: str) -> list[str]:
                 rasp[current_group].append(f"День самостоятельной работы")
             case _:
                 if(current_group[-3:] == "п/г"):
-                    rasp[current_group[:6]].append(f"Для {current_group[-5:]} Номер пары: {lession_num}  Пара: {lession_name}  Кабинет: {lession_kab}")
+                    rasp[current_group[:6]].append([current_group[-5:], lession_num, lession_name, lession_kab])
                 else:
-                    rasp[current_group].append(f"Номер пары: {lession_num}  Пара: {lession_name}  Кабинет: {lession_kab}")
+                    rasp[current_group].append([lession_num, lession_name, lession_kab])
+    
     return rasp
 
 @cached(cache = {})
@@ -48,3 +55,19 @@ async def load_json_plain_rasp():
 
 async def get_default_rasp(name_group:str, lession_num:str|int, day: str, non_default_kab: str = None):
     return "Дефолтное расписание"
+
+async def format_message(user_id: int, rasp: str) -> str:
+    formated_schedule = ""
+    match(await get_message_type(user_id)):
+        case "Классический":
+            template = ["Номер пары: {}\nПара: {}\nКабинет: {}","Для {} п/г Номер пары: {}\nПара: {}\nКабинет: {}"]
+        case "Мини":
+            template = ["{} | {} | {}","{} | {} | {} | {}"]
+        case "Нормальный":
+            template = ["Номер пары: {}\nПара: {}\nКабинет: {}","Для {} п/г Номер пары: {}\nПара: {}\nКабинет: {}"]
+    for lession in rasp:
+        if (len(lession) == 4): formated_schedule += (template[1]).format(*lession) +"\n"
+        elif (len(lession) == 3): formated_schedule += (template[0]).format(*lession) +"\n"
+        else: formated_schedule += lession +"\n"
+    return formated_schedule
+    

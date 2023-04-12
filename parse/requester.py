@@ -18,7 +18,7 @@ from cachetools import cached, TTLCache
 async def req_site(day: str) -> str:
     async with aiohttp.ClientSession() as session:
         async with session.get(f"https://rsp.chemk.org/4korp/{day}.htm") as response:
-            text = await response.text()
+            return await response.text()
             
 async def is_rasp_on_site(day: str = "Tomorrow") -> bool:
     raw_rasp = await req_site(day)
@@ -27,5 +27,5 @@ async def is_rasp_on_site(day: str = "Tomorrow") -> bool:
 
 async def get_table_rasp(day: str) -> list[str]:
     raw_rasp = await req_site(day)
-    return read_html(raw_rasp, thousands=None)[0].values.tolist()
+    return read_html(raw_rasp, thousands=None)[0].values.tolist() # TODO: remake to support more than one table
 

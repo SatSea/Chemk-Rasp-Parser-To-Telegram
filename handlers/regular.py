@@ -10,9 +10,10 @@ from misc import cat_pic
 from main import start_time
 from log import logger
 from parse import group_rasp
+from groups import default_group, rasp_without_default_group
 
 # @dp.message(commands=["start"])
-async def start(message: types.Message):
+async def start(message: types.Message) -> None:
     logger.info(
         f"Issued \"start\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     await message.reply("""Disclaimer: Вся информация предоставляется на условиях \"как есть\" без каких-либо гарантий полноты, точности и не заменяет просмотр расписания на сайте.
@@ -20,7 +21,7 @@ async def start(message: types.Message):
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=await get_regular_kb())
 
 # @dp.message(commands=["FAQ", "faq"])
-async def faq(message: types.Message):
+async def faq(message: types.Message) -> None:
     logger.info(
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     await message.answer("""FAQ:
@@ -51,7 +52,7 @@ async def faq(message: types.Message):
   """, parse_mode='MarkdownV2')
 
 # @dp.message(commands=["Status", "status"])
-async def status(message: types.Message):
+async def status(message: types.Message) -> None:
     logger.info(
         f"Issued \"Status\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     try:
@@ -68,7 +69,7 @@ async def status(message: types.Message):
                 'https://cdn.discordapp.com/attachments/878333995908222989/1048634370031882310/homer-simpson.gif')
 
 # @dp.message(commands=["Cat", "cat"])
-async def cat(message: types.Message):
+async def cat(message: types.Message) -> None:
     logger.info(
         f"Issued \"Cat\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     pic, type = await cat_pic()
@@ -78,7 +79,7 @@ async def cat(message: types.Message):
         await message.reply_photo(pic)
 
 # @dp.message(commands=["About", "about"])
-async def about(message: types.Message):
+async def about(message: types.Message) -> None:
     logger.info(
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     await message.reply(
@@ -87,10 +88,11 @@ async def about(message: types.Message):
                 'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif')
 
 # @dp.message(commands=["Today", "today"])
-async def today(message: types.Message):
+async def today(message: types.Message) -> None:
     try:
-        if (is_have_default_group(message.from_user.id)):
-            rasp = await group_rasp("", get_default_group(message.from_user.id))
+        is_user_have_default_group, user_default_group = await default_group(message.from_user.id)
+        if (is_user_have_default_group):
+            rasp = await group_rasp("today", user_default_group, message.from_user.id)
             await message.reply(rasp)
             logger.info(
                 f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -104,10 +106,10 @@ async def today(message: types.Message):
 
 
 # @dp.message(commands=["Tomorrow", "tomorrow"])
-async def tommorrow(message: types.Message):
+async def tommorrow(message: types.Message) -> None:
     try:
-        if (is_have_default_group(message.from_user.id)):
-            rasp = await group_rasp("", get_default_group(message.from_user.id))
+        if (await is_have_default_group(message.from_user.id)):
+            rasp = await group_rasp("", await get_default_group(message.from_user.id))
             await message.reply(rasp)
             logger.info(
                 f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -120,7 +122,7 @@ async def tommorrow(message: types.Message):
         await message.reply("У меня не получилось получить расписание на завтра")
 
 # @dp.message(commands=["Schedule", "schedule"])
-async def schedule(message: types.Message):
+async def schedule(message: types.Message) -> None:
     match(datetime.today().isoweekday()):
         case 1:
             schedule = "Расписание звонков на понедельник:\n\nИнформационная 5-минутка: 8.10 - 8.15\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
@@ -134,26 +136,26 @@ async def schedule(message: types.Message):
 
 
 # @dp.message(commands=["Subscribe", "subscribe"])
-async def subscribe(message: types.Message):
+async def subscribe(message: types.Message) -> None:
     await message.reply("Выбери группы на которые ты хочешь подписаться:", reply_markup=await get_inline_sub_kb(message.from_user.id))
     logger.info(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
 
 # @dp.message(commands=["Messages_type", "messages_type"])
-async def subscribe(message: types.Message):
+async def message_type(message: types.Message) -> None:
     await message.reply("Выбери формат сообщений который ты хочешь:", reply_markup=await get_inline_message_type_kb(message.from_user.id))
     logger.info(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
 
 
 # @dp.message()
-async def unknown_commnand(message: types.Message):
+async def unknown_commnand(message: types.Message) -> None:
     await message.reply('Я не нашел такую команду...')
     await message.answer_animation('https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
     logger.warning(f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote")
 
-async def register_regular_handlers(dp: Dispatcher):
-    dp.message.register(about, Command(commands=["test"]))
+async def register_regular_handlers(dp: Dispatcher) -> None:
+    dp.message.register(about, Command(commands=["About", "about"]))
     dp.message.register(cat, Command(commands=["Cat", "cat"]))
     dp.message.register(start, Command(commands=["start"]))
     dp.message.register(status, Command(commands=["Status", "status"]))
@@ -162,6 +164,6 @@ async def register_regular_handlers(dp: Dispatcher):
     dp.message.register(tommorrow, Command(commands=["Tomorrow", "tomorrow"]))
     dp.message.register(schedule, Command(commands=["Schedule", "schedule"]))
     dp.message.register(subscribe, Command(commands=["Subscribe", "subscribe"]))
-    dp.message.register(subscribe, Command(commands=["Messages_type", "messages_type"]))
+    dp.message.register(message_type, Command(commands=["Messages_type", "messages_type"]))
     dp.message.register(unknown_commnand)
     
