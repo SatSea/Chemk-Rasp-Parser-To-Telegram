@@ -21,7 +21,7 @@ async def start_waiting() -> None:
                 case _:
                     time_to_sleep = time_start_hour + timedelta(1) - time_now
         seconds_to_sleep: int = time_to_sleep.total_seconds()
-        logger.info(f"Need to sleep for {round(seconds_to_sleep)} seconds")
+        logger.debug(f"Need to sleep for {round(seconds_to_sleep)} seconds")
         await sleep(seconds_to_sleep)
         await check_for_rasp()
 
