@@ -34,8 +34,8 @@ async def message_type(callback: CallbackQuery):
 async def rasp(callback: CallbackQuery):
     try:
         rasp = await group_rasp(*callback.data.replace("rasp_", "").split("_"), callback.from_user.id)
-        await callback.answer()
         await bot.send_message(callback.from_user.id,rasp)
+        await callback.answer()
         logger.info(
             f"Got callback \"rasp\" from {callback.from_user.username} ({callback.from_user.full_name}) [{callback.from_user.id}]")
     except:
