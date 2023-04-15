@@ -191,6 +191,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                     para.append(
                         f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  {'Кабинет: 'if kab is not None else ''}{kab if kab is not None else ''}")
 
+    para.sort(key=lambda x: int(x.split(":")[1][1].strip()))
     return has_group
 
 
