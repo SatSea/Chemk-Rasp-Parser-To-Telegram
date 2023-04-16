@@ -118,7 +118,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras == "По расписанию"):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[1][3][index] if len(tables[0].columns) > 4 else None
+                        kab = tables[1][3][index] if len(tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
@@ -137,7 +137,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras.lower() == "по расписанию"):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[1][3][index] if len(tables[0].columns) > 4 else None
+                        kab = tables[1][3][index] if len(tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
@@ -159,7 +159,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras.lower() == "по расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[0][3][index] if len(tables[0].columns) > 4 else None
+                        kab = tables[0][3][index] if len(tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
@@ -178,7 +178,7 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras == "По расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[0][3][index] if len(tables[0].columns) > 4 else None
+                        kab = tables[0][3][index] if len(tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Для {group[8:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
