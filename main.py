@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from telebot import types, asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
+from telebot.formatting import escape_markdown
 
 
 # region disable some rules in pylint
@@ -208,7 +209,7 @@ def get_from_site(day):
 
 def gen_message(para):
     itogo = ('\n'.join(para))
-    return itogo
+    return escape_markdown(itogo)
 
 
 async def waiter_checker():
@@ -283,7 +284,7 @@ def add_daily_message_to_itogo(itogo):
 
 async def dispatcher(chat_id, rasp):
     try:
-        await bot.send_message(chat_id, rasp)
+        await bot.send_message(chat_id, rasp, parse_mode='HTML')
     except Exception as e:
         create_task(dump_logs(
             f"I failed to send a message to a user with id {chat_id} because {e}\n"))
@@ -524,14 +525,14 @@ async def daily_message(message: types.Message):
     create_task(bot.set_state(message.from_user.id, "add_message", message.chat.id))
 
 @bot.message_handler(state="add_message")
-async def add_daily_message(message):
+async def add_daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
         return
     global add_message 
-    add_message = f"{message.text}\nСообщение от: @{message.from_user.username}" 
-    create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message))
+    add_message = f"{message.html_text}\nСообщение от: @{message.from_user.username}" 
+    create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML'))
     create_task(dump_logs(
         f"Added to Daily_message \"{add_message}\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.delete_state(message.from_user.id, message.chat.id))
@@ -545,9 +546,9 @@ async def daily_message(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
-    create_task(bot.reply_to(message, "Я дополню ежедневную рассылку этим:\n" + add_message))
+    create_task(bot.reply_to(message, "Я дополню ежедневную рассылку этим:\n" + add_message, parse_mode='HTML'))
 
-@bot.message_handler(commands=["Send_message", "Send_message"])
+@bot.message_handler(commands=["Send_message", "send_message"])
 async def Send_message(message: types.Message):
     global add_message
     if message.chat.id not in allowed_ids:
@@ -587,7 +588,7 @@ async def today(message: types.Message):
     rasp = today_rasp()
     create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.reply_to(message, rasp)
+    await bot.reply_to(message, rasp, parse_mode='MarkdownV2')
 
 
 @bot.message_handler(commands=["Tomorrow", "tomorrow"])
@@ -595,7 +596,7 @@ async def tommorrow(message: types.Message):
     rasp = tomorrow_rasp()
     create_task(dump_logs(
         f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.reply_to(message, rasp)
+    await bot.reply_to(message, rasp, parse_mode='MarkdownV2')
 
 @bot.message_handler(commands=["Schedule", "schedule"])
 async def Schedule(message: types.Message):
