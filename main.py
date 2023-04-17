@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from telebot import types, asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
-from telebot.formatting import escape_markdown
+from telebot.formatting import escape_html
 
 
 # region disable some rules in pylint
@@ -153,10 +153,10 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
     else:
         for index in range(len(tables[0])):
             group = tables[0][0][index]
+            kab = tables[0][3][index] if len(tables[0].columns) > 3 else None
             if group == name_of_group:
                 has_group = True
                 paras = tables[0][2][index]
-                kab = tables[0][3][index] if len(tables[0].columns) > 3 else None
                 if (paras.lower() == "по расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
@@ -209,7 +209,7 @@ def get_from_site(day):
 
 def gen_message(para):
     itogo = ('\n'.join(para))
-    return escape_markdown(itogo) 
+    return escape_html(itogo) 
 
 
 async def waiter_checker():
@@ -530,7 +530,7 @@ async def add_daily_message(message: types.Message):
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
         return
-    global add_message 
+    global add_message
     add_message = f"{message.html_text}\nСообщение от: @{message.from_user.username}" 
     create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML'))
     create_task(dump_logs(
@@ -588,7 +588,7 @@ async def today(message: types.Message):
     rasp = today_rasp()
     create_task(dump_logs(
         f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.reply_to(message, rasp, parse_mode='MarkdownV2')
+    await bot.reply_to(message, rasp, parse_mode='HTML')
 
 
 @bot.message_handler(commands=["Tomorrow", "tomorrow"])
@@ -596,7 +596,7 @@ async def tommorrow(message: types.Message):
     rasp = tomorrow_rasp()
     create_task(dump_logs(
         f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.reply_to(message, rasp, parse_mode='MarkdownV2')
+    await bot.reply_to(message, rasp, parse_mode='HTML')
 
 @bot.message_handler(commands=["Schedule", "schedule"])
 async def Schedule(message: types.Message):
