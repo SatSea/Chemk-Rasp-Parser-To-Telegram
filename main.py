@@ -209,7 +209,7 @@ def get_from_site(day):
 
 def gen_message(para):
     itogo = ('\n'.join(para))
-    return escape_markdown(itogo)
+    return itogo
 
 
 async def waiter_checker():
