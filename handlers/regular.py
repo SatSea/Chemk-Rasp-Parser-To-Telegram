@@ -13,6 +13,8 @@ from parse import group_rasp
 from groups import default_group, rasp_without_default_group
 
 # @dp.message(commands=["start"])
+
+
 async def start(message: types.Message) -> None:
     logger.info(
         f"Issued \"start\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -21,6 +23,8 @@ async def start(message: types.Message) -> None:
 Аптайм бота очень зависит от моего настроения и поэтому бот может быть не всегда доступен 24/7 :)""", reply_markup=await get_regular_kb())
 
 # @dp.message(commands=["FAQ", "faq"])
+
+
 async def faq(message: types.Message) -> None:
     logger.info(
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -52,23 +56,26 @@ async def faq(message: types.Message) -> None:
   """, parse_mode='MarkdownV2')
 
 # @dp.message(commands=["Status", "status"])
+
+
 async def status(message: types.Message) -> None:
     logger.info(
         f"Issued \"Status\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     try:
         commit = check_output(['git', 'rev-parse', '--short',
-                          'HEAD']).decode('ascii').strip()
+                               'HEAD']).decode('ascii').strip()
     except:
         commit = "Не получилось получить хэш коммита"
     await message.reply(f"""Бот запущен {distance_of_time_in_words(start_time, accuracy=3)}
-Работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit}) """
-# Кеш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
-# на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
-, parse_mode='MarkdownV2')
+Работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit}) """                        # Кеш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
+                        # на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
+                        , parse_mode='MarkdownV2')
     await message.answer_animation(
-                'https://cdn.discordapp.com/attachments/878333995908222989/1048634370031882310/homer-simpson.gif')
+        'https://cdn.discordapp.com/attachments/878333995908222989/1048634370031882310/homer-simpson.gif')
 
 # @dp.message(commands=["Cat", "cat"])
+
+
 async def cat(message: types.Message) -> None:
     logger.info(
         f"Issued \"Cat\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -79,15 +86,19 @@ async def cat(message: types.Message) -> None:
         await message.reply_photo(pic)
 
 # @dp.message(commands=["About", "about"])
+
+
 async def about(message: types.Message) -> None:
     logger.info(
         f"Issued \"About\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
     await message.reply(
         "Участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]\nКосвенная помощь в разработке: Ania [Донаты на печеньки и пиво, и моральная поддержка!]")
     await message.answer_animation(
-                'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif')
+        'https://cdn.discordapp.com/attachments/878333995908222989/1032677359926653008/sleepy-at-work-sleepy-kitten.gif')
 
 # @dp.message(commands=["Today", "today"])
+
+
 async def today(message: types.Message) -> None:
     try:
         is_user_have_default_group, user_default_group = await default_group(message.from_user.id)
@@ -98,7 +109,7 @@ async def today(message: types.Message) -> None:
                 f"Issued \"Today\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
         else:
             await rasp_without_default_group(message, "today")
-        
+
     except Exception as e:
         logger.exception(
             f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] issued \"Today\", but I couldn't make and send a rasp")
@@ -110,27 +121,31 @@ async def tommorrow(message: types.Message) -> None:
     try:
         is_user_have_default_group, user_default_group = await default_group(message.from_user.id)
         if (is_user_have_default_group):
-            rasp = await group_rasp("tomorrow", user_default_group, message.from_user.id)            
+            rasp = await group_rasp("tomorrow", user_default_group, message.from_user.id)
             await message.reply(rasp)
             logger.info(
                 f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
         else:
             await rasp_without_default_group(message, "tomorrow")
-        
+
     except Exception as e:
         logger.exception(
             f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] issued \"Today\", but I couldn't make and send a rasp")
         await message.reply("У меня не получилось получить расписание на завтра")
 
+
 # @dp.message(commands=["Schedule", "schedule"])
 async def schedule(message: types.Message) -> None:
-    match(datetime.today().isoweekday()):
+    weekday = ["понедельник", "вторник",
+               "среду", "четверг", "пятницу", "субботу"]
+    day_of_week = datetime.today().isoweekday()
+    match(day_of_week):
         case 1:
-            schedule = "Расписание звонков на понедельник:\n\nИнформационная 5-минутка: 8.10 - 8.15\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
-        case 2:
-            schedule = "Расписание звонков на вторник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \nКлассный час 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"
+            schedule = "Расписание звонков на понедельник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05 – 10:55 11:25 – 12:05 \nКлассный час: 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"
+        case 7:
+            schedule = "Расписание звонков на воскресенье:\n\nПить пиво"
         case _:
-            schedule = "Расписание звонков:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05- 10:35 11:05 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
+            schedule = f"Расписание звонков на {weekday[day_of_week - 1]}:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05 – 10:55 11:25 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
     await message.reply(schedule)
     logger.info(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
@@ -143,6 +158,8 @@ async def subscribe(message: types.Message) -> None:
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}]")
 
 # @dp.message(commands=["Messages_type", "messages_type"])
+
+
 async def message_type(message: types.Message) -> None:
     await message.reply("Выбери формат сообщений который ты хочешь:", reply_markup=await get_inline_message_type_kb(message.from_user.id))
     logger.info(
@@ -153,7 +170,9 @@ async def message_type(message: types.Message) -> None:
 async def unknown_commnand(message: types.Message) -> None:
     await message.reply('Я не нашел такую команду...')
     await message.answer_animation('https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
-    logger.warning(f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote")
+    logger.warning(
+        f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote")
+
 
 async def register_regular_handlers(dp: Dispatcher) -> None:
     dp.message.register(about, Command(commands=["About", "about"]))
@@ -164,7 +183,8 @@ async def register_regular_handlers(dp: Dispatcher) -> None:
     dp.message.register(today, Command(commands=["Today", "today"]))
     dp.message.register(tommorrow, Command(commands=["Tomorrow", "tomorrow"]))
     dp.message.register(schedule, Command(commands=["Schedule", "schedule"]))
-    dp.message.register(subscribe, Command(commands=["Subscribe", "subscribe"]))
-    dp.message.register(message_type, Command(commands=["Messages_type", "messages_type"]))
+    dp.message.register(subscribe, Command(
+        commands=["Subscribe", "subscribe"]))
+    dp.message.register(message_type, Command(
+        commands=["Messages_type", "messages_type"]))
     dp.message.register(unknown_commnand)
-    
