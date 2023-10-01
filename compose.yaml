@@ -1,0 +1,6 @@
+services:
+  telegrambot:
+    container_name: telegrambot
+    build: .
+    volumes:
+      - ./logs/:/app/logs

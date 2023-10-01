@@ -1,0 +1,7 @@
+.vscode/*
+logs/*
+*/__pycache__/*
+
+.gitignore
+readme.md
+compose.yaml
