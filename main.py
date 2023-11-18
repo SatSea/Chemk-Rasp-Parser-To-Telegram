@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from telebot import types, asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
 from telebot.formatting import escape_html
-
+from telebot.util import quick_markup
 
 # region disable some rules in pylint
 # pylint: disable=anomalous-backslash-in-string, line-too-long, bare-except, missing-function-docstring, unspecified-encoding, broad-except
@@ -333,9 +333,9 @@ async def wait(time):
 async def FAQ(message: types.Message):
     create_task(dump_logs(
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, """FAQ: 
+    create_task(bot.reply_to(message, """FAQ:
 1\)Q: Ну так что там с обработкой данных?
-  A: Мы хотим сообщить вам, что наш Telegram\-бот собирает ограниченное количество информации о вас, например, твой ник, твой ID, chat ID и текст сообщений, исключительно для целей логгинга и подписки на нашу ежедневную рассылку\. 
+  A: Мы хотим сообщить вам, что наш Telegram\-бот собирает ограниченное количество информации о вас, например, твой ник, твой ID, chat ID и текст сообщений, исключительно для целей логгинга и подписки на нашу ежедневную рассылку\.
 Мы не будем использовать информацию в каких\-либо таргетированных/персонализированных рекламных целях\. Будьте уверены, что мы очень серьезно относимся к конфиденциальности и безопасности ваших данных, и никогда не передадим вашу информацию третьим лицам\.
 Используя нашего бота, вы соглашаетесь на сбор и использование ваших данных в соответствии с нашей политикой конфиденциальности\. Если у вас возникнут вопросы или проблемы, пожалуйста, обращайтесь к нам\.
 2\)Q: Почему бот такой кривой?
@@ -619,7 +619,19 @@ async def tommorrow(message: types.Message):
 async def Schedule(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Schedule\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    day_of_week = datetime.datetime.today().isoweekday()
+
+    markup = quick_markup({
+        'На завтра': {'callback_data': 'tomorrow'}
+    })
+
+    create_task(bot.reply_to(message, get_schedule(
+        "today"), reply_markup=markup))
+
+
+def get_schedule(day: str):
+    day_of_week = (datetime.datetime.today().isoweekday() +
+                   (1 if day == "tomorrow" else 0)) % 8 or 1
+
     match(day_of_week):
         case 1:
             schedule = "Расписание звонков на понедельник:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05 – 10:55 11:25 – 12:05 \nКлассный час: 12:15 – 12:45 \n3 пара: 12:55 – 13:40 13:50 – 14:35 \n4 пара: 14:45 – 15:30 15:40 – 16:25 \n5 пара: 16:35 – 17:20 17:30 – 18:15 \n6 пара: 18:25 – 19:10 19:15 – 20:00"
@@ -627,7 +639,35 @@ async def Schedule(message: types.Message):
             schedule = "Расписание звонков на воскресенье:\n\nПить пиво"
         case _:
             schedule = f"Расписание звонков на {weekday[day_of_week - 1].lower()}:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05 – 10:55 11:25 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
-    create_task(bot.reply_to(message, schedule))
+    return schedule
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "tomorrow")
+async def schedule_change_to_today_handler(callback_query: types.CallbackQuery):
+    message = callback_query.message
+    create_task(dump_logs(
+        f"Changed schedule from today to tomorrow by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+
+    markup = quick_markup({
+        'На сегодня': {'callback_data': 'today'}
+    })
+    await (bot.edit_message_text(get_schedule("tomorrow"), message.chat.id,
+                                 message.message_id, reply_markup=markup))
+    create_task(bot.answer_callback_query(callback_query.id))
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "today")
+async def schedule_change_to_tomorrow_handler(callback_query: types.CallbackQuery):
+    message = callback_query.message
+    create_task(dump_logs(
+        f"Changed schedule from tomorrow to today by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+
+    markup = quick_markup({
+        'На завтра': {'callback_data': 'tomorrow'}
+    })
+    await (bot.edit_message_text(get_schedule("today"), callback_query.message.chat.id,
+                                 callback_query.message.message_id, reply_markup=markup))
+    create_task(bot.answer_callback_query(callback_query.id))
 
 
 @bot.message_handler(func=lambda message: True)
