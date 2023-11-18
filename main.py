@@ -333,7 +333,7 @@ async def wait(time):
 async def FAQ(message: types.Message):
     create_task(dump_logs(
         f"Issued \"FAQ\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    create_task(bot.reply_to(message, """FAQ:
+    await bot.reply_to(message, """FAQ:
 1\)Q: Ну так что там с обработкой данных?
   A: Мы хотим сообщить вам, что наш Telegram\-бот собирает ограниченное количество информации о вас, например, твой ник, твой ID, chat ID и текст сообщений, исключительно для целей логгинга и подписки на нашу ежедневную рассылку\.
 Мы не будем использовать информацию в каких\-либо таргетированных/персонализированных рекламных целях\. Будьте уверены, что мы очень серьезно относимся к конфиденциальности и безопасности ваших данных, и никогда не передадим вашу информацию третьим лицам\.
@@ -364,9 +364,9 @@ async def FAQ(message: types.Message):
   A: Мы ебаны и мы этмим гордимся\.
 14\)Q: А че всмысле, почему в 2 часа ночи бот не доступен?\!??\!?
   A: Kys\.
-  """, parse_mode='MarkdownV2'))
+  """, parse_mode='MarkdownV2')
     create_task(bot.send_animation(
-        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1076927137623310457/faq.gif'))
+        message.chat.id, 'https://tenor.com/view/tired-groggy-sleepy-what-dazed-gif-16582493918036962522'))
 
 
 async def cat_pic(chat_id):
@@ -389,7 +389,7 @@ async def tommorrow(message: types.Message):
 на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
 """, parse_mode='MarkdownV2')
     create_task(bot.send_animation(message.chat.id,
-                'https://cdn.discordapp.com/attachments/878333995908222989/1076918042279301310/status-report-status-update.gif'))
+                'https://tenor.com/view/status-report-status-update-kowalski-status-report-kowalski-status-gif-23668188'))
 
 
 @bot.message_handler(commands=["Cat", "cat"])
@@ -407,7 +407,7 @@ async def tommorrow(message: types.Message):
         message, """Прямое участие в разработке принимали: Satsea(aka Aestas) [Код и изначальная идея], SashaGHT(aka Lysk) [Немного будущего кода (для поддержки нескольких групп), редактура текста и бóльшая часть написанного текста], ALLAn [помощь в распутывании и расчесывании спагетти-кода]
 Косвенное участие в разработке: Ania [Донаты на печеньки и пиво, и (м)оральная поддержка!], SuriCafe[твои донаты пошли точно не на пиво и спасибо за моральную поддержку!!!]""")
     create_task(bot.send_animation(message.chat.id,
-                'https://cdn.discordapp.com/attachments/878333995908222989/1076928199977611356/kitty_1.gif'))
+                'https://tenor.com/view/cat-bread-kitten-kitty-cute-gif-17858209'))
 
 
 def create_task(task):
@@ -456,7 +456,7 @@ def subscribe(message):
                         create_task(bot.reply_to(
                             message, "Успешно получилось отписаться от обновлений расписания"))
                         create_task(bot.send_animation(
-                            message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662785013841941/3jRk.gif'))
+                            message.chat.id, 'https://i.gifer.com/3jRk.gif'))
                 else:
                     ids.append(chat_id)
                     create_task(dump_logs(
@@ -464,7 +464,7 @@ def subscribe(message):
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновления расписания"))
                     create_task(bot.send_animation(
-                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+                        message.chat.id, 'https://tenor.com/view/at-your-service-sir-kif-zapp-brannigan-futurama-here-to-help-gif-5917278640134074942'))
                 json1 = json.dumps([{"id": ids}])
                 configs[0]["id"] = json1
                 config.write(json1)
@@ -483,7 +483,7 @@ def subscribe(message):
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(
-                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+                        message.chat.id, 'https://tenor.com/view/at-your-service-sir-kif-zapp-brannigan-futurama-here-to-help-gif-5917278640134074942'))
                 except:
                     config.write(json1)
                     create_task(dump_logs(
@@ -491,7 +491,7 @@ def subscribe(message):
                     create_task(bot.reply_to(
                         message, "Успешно подписан на обновление расписания"))
                     create_task(bot.send_animation(
-                        message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1032662784590237786/emma-service.gif'))
+                        message.chat.id, 'https://tenor.com/view/at-your-service-sir-kif-zapp-brannigan-futurama-here-to-help-gif-5917278640134074942'))
 
 
 async def fast_checker():
@@ -514,7 +514,7 @@ async def dispatch(message: types.Message):
     else:
         await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
+            message.chat.id, 'https://tenor.com/view/among-us-twerk-yellow-ass-thang-gif-18983570'))
 
 
 @bot.message_handler(commands=["Add_daily_message", "add_daily_message"])
@@ -522,11 +522,11 @@ async def daily_message(message: types.Message):
     create_task(dump_logs(
         f"Issued \"Dispatch\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id not in allowed_ids:
-        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(message.chat.id,
-                                       'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
+                                       'https://tenor.com/view/among-us-twerk-yellow-ass-thang-gif-18983570'))
         return
-    create_task(bot.reply_to(message, "Яви свое послание народу"))
+    await bot.reply_to(message, "Яви свое послание народу")
     create_task(bot.set_state(message.from_user.id,
                 "add_message", message.chat.id))
 
@@ -534,14 +534,14 @@ async def daily_message(message: types.Message):
 @bot.message_handler(state="add_message")
 async def add_daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
-        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+            message.chat.id, 'https://tenor.com/view/lord-of-the-rings-lotr-theoden-rohan-two-towers-gif-13863406401517703527'))
         return
     global add_message
     add_message = f"{message.html_text}\nСообщение от: @{message.from_user.username}"
-    create_task(bot.reply_to(
-        message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML'))
+    await bot.reply_to(
+        message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML')
     create_task(dump_logs(
         f"Added to Daily_message \"{add_message}\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.delete_state(message.from_user.id, message.chat.id))
@@ -552,7 +552,7 @@ async def daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+            message.chat.id, 'https://tenor.com/view/lord-of-the-rings-lotr-theoden-rohan-two-towers-gif-13863406401517703527'))
         return
     create_task(dump_logs(
         f"Issued \"Daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
@@ -566,9 +566,9 @@ async def daily_message(message: types.Message):
 async def Send_message(message: types.Message):
     global add_message
     if message.chat.id not in allowed_ids:
-        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+            message.chat.id, 'https://tenor.com/view/lord-of-the-rings-lotr-theoden-rohan-two-towers-gif-13863406401517703527'))
         return
     create_task(dump_logs(
         f"Issued \"Send_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
@@ -586,9 +586,9 @@ async def Send_message(message: types.Message):
 async def clear_daily_message(message: types.Message):
     global add_message
     if message.chat.id not in allowed_ids:
-        create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
+        await bot.reply_to(message, "Неа, тебе не разрешено")
         create_task(bot.send_animation(
-            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
+            message.chat.id, 'https://tenor.com/view/among-us-twerk-yellow-ass-thang-gif-18983570'))
         return
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
@@ -675,7 +675,7 @@ async def unknown_command(message):
     await bot.reply_to(message, "Я не нашел такую команду...")
     create_task(dump_logs(
         f"{message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] wrote \"{message.text}\", but I did not understand what he wrote at in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    await bot.send_animation(message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1019257151916625930/not_found.gif')
+    await bot.send_animation(message.chat.id, 'https://tenor.com/view/raccoon-cute-cotton-candy-wash-dissolve-gif-17832451')
 
 
 async def invalidate_cache():
