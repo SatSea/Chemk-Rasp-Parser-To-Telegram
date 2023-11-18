@@ -51,7 +51,7 @@ def default_rasp(plain_raspisanie):
     if plain_raspisanie == []:
         return "Согласно расписанию, в этот день нет пар"
     for para in range(len(plain_raspisanie)):
-        if(len(plain_raspisanie[para]) != 0):
+        if (len(plain_raspisanie[para]) != 0):
             if frist_para is None:
                 frist_para = f"Приходить к {para +1} паре\n"
             paras.append(
@@ -90,7 +90,7 @@ def get_rsp(day):
         return "Расписание есть на сайте, но у меня не получилось его разобрать на таблицы :("
 
     has_group = parsing_lines_to_schedule(para, plain_raspisanie, tables)
-    if(has_group):
+    if (has_group):
         itogo = gen_message(para)
     else:
         itogo = default_rasp(plain_raspisanie)
@@ -119,7 +119,8 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras == "По расписанию"):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[1][3][index] if len(tables[0].columns) > 3 else None
+                        kab = tables[1][3][index] if len(
+                            tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
@@ -138,7 +139,8 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                 if (paras.lower() == "по расписанию"):
                     for nomer in (tables[1][1][index]).split(','):
                         nomer = int(nomer) - 1
-                        kab = tables[1][3][index] if len(tables[0].columns) > 3 else None
+                        kab = tables[1][3][index] if len(
+                            tables[0].columns) > 3 else None
                         if kab != kab:
                             para.append(
                                 f"Для {group[6:]} Номер пары: {nomer+1}  Пара: {plain_raspisanie[nomer][0]}, {plain_raspisanie[nomer][1]} Кабинет: {plain_raspisanie[nomer][2]}")
@@ -176,7 +178,8 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
             elif group == (name_of_group + "  1 п/г") or group == (name_of_group + "  2 п/г"):
                 has_group = True
                 paras = tables[0][2][index]
-                kab = tables[0][3][index] if len(tables[0].columns) > 3 else None
+                kab = tables[0][3][index] if len(
+                    tables[0].columns) > 3 else None
                 if (paras == "По расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
@@ -210,12 +213,12 @@ def get_from_site(day):
 
 def gen_message(para):
     itogo = ('\n'.join(para))
-    return escape_html(itogo) 
+    return escape_html(itogo)
 
 
 async def waiter_checker():
     print("Поиск расписания запущен")
-    while(True):
+    while (True):
         print("Считаю сколько спать")
         weekday_number = datetime.datetime.today().weekday()
         if datetime.datetime.today().hour < hour_when_start_checking:
@@ -231,7 +234,7 @@ async def waiter_checker():
         seconds_to_sleep = time_to_sleep.total_seconds()
         await wait(seconds_to_sleep)
         resp = None
-        while(resp is None):
+        while (resp is None):
             resp = checker()
             if resp is None:
                 await wait(300)
@@ -261,7 +264,7 @@ def checker():
         plain_raspisanie = plain_rasp(
             (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%A'))
         has_group = parsing_lines_to_schedule(para, plain_raspisanie, tables)
-        if(has_group):
+        if (has_group):
             itogo = gen_message(para)
         else:
             itogo = default_rasp(plain_raspisanie)
@@ -277,11 +280,13 @@ def checker():
         itogo = f"Ежедневная рассылка расписания на {weekday[day_plus_two.weekday()]} {day_plus_two.day} {month[day_plus_two.month-1]}:\n\n" + itogo
     return add_daily_message_to_itogo(itogo)
 
+
 def add_daily_message_to_itogo(itogo):
     global add_message
     itogo = itogo + "\n\n" + add_message if add_message != '' else itogo
     add_message = ''
     return itogo
+
 
 async def dispatcher(chat_id, rasp):
     try:
@@ -364,7 +369,6 @@ async def FAQ(message: types.Message):
         message.chat.id, r'https://cdn.discordapp.com/attachments/878333995908222989/1076927137623310457/faq.gif'))
 
 
-
 async def cat_pic(chat_id):
     cat = json.loads(requests.get("https://meow.senither.com/v1/random").text)
     if cat['data']['type'] == 'mp4':
@@ -440,7 +444,7 @@ def subscribe(message):
             configs = json.loads(config.read())
             with open("config.json", "w") as config:
                 ids = configs[0]["id"]
-                if(chat_id in ids):
+                if (chat_id in ids):
                     try:
                         ids.remove(chat_id)
                     except:
@@ -519,46 +523,57 @@ async def daily_message(message: types.Message):
         f"Issued \"Dispatch\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 
+        create_task(bot.send_animation(message.chat.id,
                                        'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
         return
     create_task(bot.reply_to(message, "Яви свое послание народу"))
-    create_task(bot.set_state(message.from_user.id, "add_message", message.chat.id))
+    create_task(bot.set_state(message.from_user.id,
+                "add_message", message.chat.id))
+
 
 @bot.message_handler(state="add_message")
 async def add_daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
         return
     global add_message
-    add_message = f"{message.html_text}\nСообщение от: @{message.from_user.username}" 
-    create_task(bot.reply_to(message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML'))
+    add_message = f"{message.html_text}\nСообщение от: @{message.from_user.username}"
+    create_task(bot.reply_to(
+        message, "Добавлю к следующей рассылке данный текст:\n" + add_message, parse_mode='HTML'))
     create_task(dump_logs(
         f"Added to Daily_message \"{add_message}\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     create_task(bot.delete_state(message.from_user.id, message.chat.id))
-    
+
+
 @bot.message_handler(commands=["Daily_message", "daily_message"])
 async def daily_message(message: types.Message):
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
         return
     create_task(dump_logs(
         f"Issued \"Daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
-    create_task(bot.reply_to(message, "Я дополню ежедневную рассылку этим:\n" + add_message, parse_mode='HTML'))
+    if (add_message == ''):
+        return create_task(bot.reply_to(message, "Мне нечего добавлять к ежедневной рассылке"))
+    create_task(bot.reply_to(
+        message, "Я дополню ежедневную рассылку этим:\n" + add_message, parse_mode='HTML'))
+
 
 @bot.message_handler(commands=["Send_message", "send_message"])
 async def Send_message(message: types.Message):
     global add_message
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1032669199581073428/you-have-no-power-here.gif'))
         return
     create_task(dump_logs(
         f"Issued \"Send_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    if (add_message == ''): return create_task(bot.reply_to(message, "В рассылке ничего нет"))
+    if (add_message == ''):
+        return create_task(bot.reply_to(message, "В рассылке ничего нет"))
     with open("config.json", "r") as config:
         ids = json.loads(config.read())
         print(ids[0]["id"])
@@ -567,22 +582,22 @@ async def Send_message(message: types.Message):
     add_message = ''
 
 
-    
-
-
-
 @bot.message_handler(commands=["Clear_daily_message", "clear_daily_message"])
 async def clear_daily_message(message: types.Message):
     global add_message
     if message.chat.id not in allowed_ids:
         create_task(bot.reply_to(message, "Неа, тебе не разрешено"))
-        create_task(bot.send_animation(message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
+        create_task(bot.send_animation(
+            message.chat.id, 'https://cdn.discordapp.com/attachments/878333995908222989/1076915393941217332/amogus.gif'))
         return
     create_task(dump_logs(
         f"Issued \"Clear_daily_message\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
-    if (add_message == ''): return create_task(bot.reply_to(message, "Мне нечего удалять"))
+    if (add_message == ''):
+        return create_task(bot.reply_to(message, "Мне нечего удалять"))
     add_message = ''
-    create_task(bot.reply_to(message, "Успешно удалил дополнительный текст к ежедневной рассылке"))
+    create_task(bot.reply_to(
+        message, "Успешно удалил дополнительный текст к ежедневной рассылке"))
+
 
 @bot.message_handler(commands=["Today", "today"])
 async def today(message: types.Message):
@@ -599,6 +614,7 @@ async def tommorrow(message: types.Message):
         f"Issued \"Tomorrow\" from {message.from_user.username} ({message.from_user.full_name}) [{message.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
     await bot.reply_to(message, rasp, parse_mode='HTML')
 
+
 @bot.message_handler(commands=["Schedule", "schedule"])
 async def Schedule(message: types.Message):
     create_task(dump_logs(
@@ -612,7 +628,8 @@ async def Schedule(message: types.Message):
         case _:
             schedule = f"Расписание звонков на {weekday[day_of_week - 1].lower()}:\n\n1 пара: 8:15 – 9:00 9:10 – 9:55 \n2 пара: 10:05 – 10:55 11:25 – 12:05 \n3 пара: 12:15 – 13:00 13:10 – 13:55 \n4 пара: 14:15 – 15:00 15:10 – 15:55 \n5 пара: 16:05 – 16:50 17:00 – 17:45 \n6 пара: 17:55 – 18:40 18:50 – 19:35"
     create_task(bot.reply_to(message, schedule))
-    
+
+
 @bot.message_handler(func=lambda message: True)
 async def unknown_command(message):
     await bot.reply_to(message, "Я не нашел такую команду...")
@@ -622,7 +639,7 @@ async def unknown_command(message):
 
 
 async def invalidate_cache():
-    while(True):
+    while (True):
         nextday = ((datetime.datetime.now().replace(hour=0, minute=0, second=0) +
                    datetime.timedelta(1)) - datetime.datetime.now()).total_seconds()
         await wait(nextday)
@@ -638,7 +655,7 @@ async def init():
 
 
 async def inf_pooling():
-    while(True):
+    while (True):
         try:
             await bot.polling(none_stop=True, timeout=30)
         except Exception as e:
