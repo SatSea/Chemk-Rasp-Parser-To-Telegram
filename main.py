@@ -646,7 +646,7 @@ def get_schedule(day: str):
 async def schedule_change_to_today_handler(callback_query: types.CallbackQuery):
     message = callback_query.message
     create_task(dump_logs(
-        f"Changed schedule from today to tomorrow by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Changed schedule from today to tomorrow by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.now()}\n"))
 
     markup = quick_markup({
         'На сегодня': {'callback_data': 'today'}
@@ -660,7 +660,7 @@ async def schedule_change_to_today_handler(callback_query: types.CallbackQuery):
 async def schedule_change_to_tomorrow_handler(callback_query: types.CallbackQuery):
     message = callback_query.message
     create_task(dump_logs(
-        f"Changed schedule from tomorrow to today by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.fromtimestamp(message.date)}\n"))
+        f"Changed schedule from tomorrow to today by {callback_query.from_user.username} ({callback_query.from_user.full_name}) [{callback_query.from_user.id}] in {datetime.datetime.now()}\n"))
 
     markup = quick_markup({
         'На завтра': {'callback_data': 'tomorrow'}
