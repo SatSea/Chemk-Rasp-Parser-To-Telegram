@@ -160,7 +160,11 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
             if group == name_of_group:
                 has_group = True
                 paras = tables[0][2][index]
-                if (paras.lower() == "по расписанию"):
+                if (paras != paras): continue
+                if (paras.lower() == "день самостоятельной работы"):
+                    para.append(
+                        f"День самостоятельной работы")
+                elif (paras.lower() == "по расписанию"):
                     for nomer in (tables[0][1][index]).split(','):
                         nomer = int(nomer) - 1
                         if kab != kab:
@@ -196,7 +200,11 @@ def parsing_lines_to_schedule(para, plain_raspisanie, tables):
                     para.append(
                         f"Для {group[8:]} Номер пары: {tables[0][1][index]}  Пара: {tables[0][2][index]}  {'Кабинет: 'if kab is not None else ''}{kab if kab is not None else ''}")
 
-    para.sort(key=lambda x: int(x.split(":")[1][1].strip()))
+    try:
+        para.sort(key=lambda x: int(x.split(":")[1][1].strip()))
+    except:
+        create_task(dump_logs("Can't sort rasp"))
+        
     return has_group
 
 
@@ -385,8 +393,9 @@ async def tommorrow(message: types.Message):
                           'HEAD']).decode('ascii').strip()
     await bot.reply_to(message, f"""Бот запущен {distance_of_time_in_words(start_time, accuracy=3)}
 Работает на версии: [{commit}](https://github.com/SatSea/Chemk-Rasp-Parser-To-Telegram/commit/{commit})
-Кэш: на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
-на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
+Кэш:
+    на сегодня: {"Существует" if today_rasp.cache.currsize > 0 else "Инвалидирован"}
+    на завтра: {"Существует" if tomorrow_rasp.cache.currsize > 0 else "Инвалидирован"}
 """, parse_mode='MarkdownV2')
     create_task(bot.send_animation(message.chat.id,
                 'https://tenor.com/view/status-report-status-update-kowalski-status-report-kowalski-status-gif-23668188'))
